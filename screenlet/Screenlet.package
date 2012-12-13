@@ -1,7 +1,0 @@
-[Screenlet Package]
-Name=ImpulseScreenlet
-Author=Ian Halpern
-Desc=PulseAudio grphical spectrum analyzer
-Version=0.2
-ApiVersion=0.1.2
-Created=2009/12/04
