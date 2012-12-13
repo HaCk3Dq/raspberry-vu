@@ -55,9 +55,10 @@ If this completes successfully, test with:
     cd build/armv6l/test/
     ./test-libimpulse
 
-This should stream zeros up the stream; then start your favourite media player
-(in another window):
+This should stream zeros up the screen; then start pulseaudio and your favourite
+ media player (in another window):
 
+    pulseaudio --daemonize
     mplayer K.Minogue-I_should_be_so_lucky.mp3
 
 Those zero's from the test program should be replaced with some changing values
@@ -65,10 +66,19 @@ as the media plays.
 
 Troubleshooting
 ---------------
-* Pulseaudio doesnt seem to be configured
+* Pulseaudio doesnt seem to be configured - do not run pulse audio in system mode
 
-* Make command fails
+* If the make command fails, check to ensure you have all the build tools installed properly.
 
 Running
 -------
 TODO
+
+References
+----------
+* http://raspberrypi.stackexchange.com/questions/639/how-to-get-pulseaudio-running
+
+* http://raspberrypi.stackexchange.com/questions/1621/no-sound-output-in-vlc
+
+* https://projects.drogon.net/the-raspberry-ladder-board/
+
