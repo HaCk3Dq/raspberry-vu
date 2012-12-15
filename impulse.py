@@ -17,30 +17,33 @@ def bar(window, x, y, height, value):
         window.addstr(y + height - i, x, label, curses.color_pair(color))
 
 def draw(window):
-    fft = True
-    audio_sample_array = impulse.getSnapshot(fft)
-    n_bars = 16
-    spacing = 5
+    audio_sample_array = impulse.getSnapshot(True)
     x = 5
     l = len(audio_sample_array) / 4
-    for i in range(1, l, l / n_bars):
+    for i in range(0, l, l / 16):
         value = audio_sample_array[i]
         bar(window, x, 3, 16, value)
-        x += spacing
+        x += 5
 
 def main(window):
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_BLUE)
     curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_GREEN)
     curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_YELLOW)
     curses.init_pair(4, curses.COLOR_BLACK, curses.COLOR_RED)
+    curses.curs_set(0)
 
+    window.nodelay(True)
     window.clear()
     window.border(0)
-    window.addstr(2, 2, "Raspberry Pi VU meter")
+    window.addstr(2, 2, "Raspberry Ladder VU meter")
     window.refresh()
-    while True:
+    while window.getch() < 0:
         draw(window)
-        time.sleep(0.1)
+        window.refresh()
+        time.sleep(0.05)
+
+    window.clear()
+    window.refresh()
 
 if __name__ == "__main__":
     curses.wrapper(main)
