@@ -25,12 +25,14 @@
 
 int main( ) {
 
+	int i = 0;
+	long c = 0;
 	im_start( );
 
 	while ( 1 ) {
 		usleep( 1000000 / 30 );
 		double *array = im_getSnapshot( IM_FFT );
-		int i;
+		printf( "%08x: ", c++ );
 		for ( i = 0; i < 256; i+=32 )
 			printf( " %.2f", array[ i ] );
 		printf( "\n" );
