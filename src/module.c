@@ -20,7 +20,7 @@
  */
 
 #include <Python.h>
-#include "Impulse.h"
+#include "impulse.h"
 #include <string.h>
 #include <assert.h>
 #include <stdio.h>

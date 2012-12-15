@@ -20,7 +20,7 @@
  */
 
 
-#include "Impulse.h"
+#include "impulse.h"
 #include <stdio.h>
 
 int main( ) {
