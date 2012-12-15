@@ -12,7 +12,7 @@ def bar(window, x, y, height, value):
             label = "****"
             color = (i * 4 / height) + 1
         else:
-            label = "     "
+            label = "    "
             color = 0
         window.addstr(y + height - i, x, label, curses.color_pair(color))
 
