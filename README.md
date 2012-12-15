@@ -40,20 +40,18 @@ If this completes successfully, `tree build` should look something like:
     └── armv6l
         ├── impulse
         │   ├── COPYING
-        │   ├── Impulse.py
+        │   ├── impulse.py
         │   ├── impulse.so
-        │   ├── libimpulse.so
         │   └── README.md
         └── test
-            ├── libimpulse.so
-            └── test-libimpulse
+            └── test-impulse
 
-    3 directories, 7 files
+    3 directories, 5 files
 
 If this completes successfully, test with:
 
     cd build/armv6l/test/
-    ./test-libimpulse
+    ./test-impulse
 
 This should stream zeros up the screen; then start pulseaudio and your favourite
  media player (in another window):
