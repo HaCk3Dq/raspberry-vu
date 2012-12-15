@@ -26,7 +26,7 @@ following packages:
 
 Make sure that the Raspberry Ladder is fully working according to the
 instructions on pp10-11 of http://issuu.com/themagpi/docs/the_magpi_issue_7?mode=window,
-and that the wiringPI gpio command has been build and installed properly.
+and that the wiringPI `gpio` command has been build and installed properly.
 
 Building & Testing
 ------------------
@@ -66,7 +66,15 @@ as the media plays.
 
 Troubleshooting
 ---------------
-* Pulseaudio doesnt seem to be configured - do not run pulse audio in system mode
+* Pulseaudio doesn't seem to be working properly:
+
+    - do not run pulseaudio in system mode
+
+    - make sure the user is added to the _audio_ and _pulse-access_ groups: 
+      `sudo usermod -aG audio,pulse-access pi` - and then restart pulseaudio.
+
+    - start pulseaudio in debug mode: `pulseaudio --log-level=debug` instead 
+      of daemonized and scutinize the logs for any obvious errors.
 
 * If the make command fails, check to ensure you have all the build tools installed properly.
 
