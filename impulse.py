@@ -4,6 +4,7 @@ import curses
 import traceback
 import time
 import impulse
+import wiringPy
 
 def bar(window, x, y, height, value):
     stop = value * height
@@ -20,12 +21,18 @@ def draw(window):
     audio_sample_array = impulse.getSnapshot(True)
     x = 5
     l = len(audio_sample_array) / 4
+    sum = 0
     for i in range(0, l, l / 16):
         value = audio_sample_array[i]
         bar(window, x, 3, 16, value)
         x += 5
+        sum += value
+    leds = int(sum * 2)
+    wiringPy.digital_write_byte((2 ** leds) - 1)
+
 
 def main(window):
+    wiringPy.setup();
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_BLUE)
     curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_GREEN)
     curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_YELLOW)
