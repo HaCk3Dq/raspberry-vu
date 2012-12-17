@@ -27,12 +27,15 @@ def draw(window):
         bar(window, x, 3, 16, value)
         x += 5
         sum += value
-    leds = int(sum * 2)
-    wiringPy.digital_write_byte((2 ** leds) - 1)
+    leds = 8 - min(8, int(sum * 2))
+    wiringPy.digital_write_byte((0xFF * (2 ** leds)) & 0xFF)
 
 
 def main(window):
     wiringPy.setup();
+    for pin in range(0,8):
+        wiringPy.pin_mode(pin, 1)
+
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_BLUE)
     curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_GREEN)
     curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_YELLOW)
