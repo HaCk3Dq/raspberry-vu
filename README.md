@@ -21,9 +21,7 @@ a crude spectum analyser.
 Pre-requisites
 --------------
 1. Make sure you have the full gcc stack installed, and then install the 
-   following packages:
-
-       sudo apt-get install python-dev libfftw3-dev libpulse-dev
+   following packages: `sudo apt-get install python-dev libfftw3-dev libpulse-dev`
 
 2. Make sure that the Raspberry Ladder is fully working according to the
    instructions on pp10-11 of http://issuu.com/themagpi/docs/the_magpi_issue_7?mode=window,
@@ -88,7 +86,7 @@ in time to the music, as well as the on-screen spectrum analyser.
 
 Troubleshooting
 ---------------
-* Pulseaudio doesn't seem to be working properly:
+* If Pulseaudio doesn't seem to be working properly:
 
     - do not run pulseaudio in system mode
 
