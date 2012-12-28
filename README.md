@@ -23,7 +23,7 @@ Pre-requisites
 1. Make sure you have the full gcc stack installed, and then install the 
    following packages:
 
-    sudo apt-get install python-dev libfftw3-dev libpulse-dev
+       sudo apt-get install python-dev libfftw3-dev libpulse-dev
 
 2. Make sure that the Raspberry Ladder is fully working according to the
    instructions on pp10-11 of http://issuu.com/themagpi/docs/the_magpi_issue_7?mode=window,
@@ -76,7 +76,7 @@ Hence, in one terminal session:
 
 In anothe terminal:
 
-    sudo mplayer __<insert_your_mp3_here>_.mp3_
+    sudo mplayer K.Minogue-I_should_be_so_lucky.mp3
 
 Then in another terminal:
 
