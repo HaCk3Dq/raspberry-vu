@@ -14,19 +14,22 @@ from pulseaudio in a thread natively which can then be read from python. You
 can specify impulse to either output the raw stream or output the fft of the
 raw stream."
 
-This hack eshews the cairo graphics and screenlets, and interfaces to the
-Raspberry Ladder via the GPIO.
+This hack eshews the cairo graphics and screenlets frippery, and interfaces to 
+the Raspberry Ladder via the GPIO, and uses the UNIX curses library to present
+a crude spectum analyser.
 
 Pre-requisites
 --------------
-Make sure you have the full gcc stack installed, and then install the 
-following packages:
+1. Make sure you have the full gcc stack installed, and then install the 
+   following packages:
 
     sudo apt-get install python-dev libfftw3-dev libpulse-dev
 
-Make sure that the Raspberry Ladder is fully working according to the
-instructions on pp10-11 of http://issuu.com/themagpi/docs/the_magpi_issue_7?mode=window,
-and that the wiringPI `gpio` command has been build and installed properly.
+2. Make sure that the Raspberry Ladder is fully working according to the
+   instructions on pp10-11 of http://issuu.com/themagpi/docs/the_magpi_issue_7?mode=window,
+   and that the wiringPI `gpio` command has been build and installed properly.
+
+3. Compile and install the wiringPi python bindings from https://github.com/rm-hull/wiringPi
 
 Building & Testing
 ------------------
@@ -62,6 +65,27 @@ This should stream zeros up the screen; then start pulseaudio and your favourite
 Those zero's from the test program should be replaced with some changing values
 as the media plays.
 
+Running the VU Meter
+--------------------
+Since the access to the GPIO is via `/dev/mem`and this is protected, we must
+run pulseaudio and mplayer with elevated `sudo` permissions.
+
+Hence, in one terminal session:
+
+    sudo pulseaudio
+
+In anothe terminal:
+
+    sudo mplayer __<insert_your_mp3_here>_.mp3_
+
+Then in another terminal:
+
+    cd ~/Impulse/build/armv6l/test/
+    sudo ./impulse.py
+
+If all goes as expected, you should see the Raspberry ladder LED's bouncing
+in time to the music, as well as the on-screen spectrum analyser.
+
 Troubleshooting
 ---------------
 * Pulseaudio doesn't seem to be working properly:
@@ -76,9 +100,9 @@ Troubleshooting
 
 * If the make command fails, check to ensure you have all the build tools installed properly.
 
-Running
--------
 TODO
+----
+* Work out how to get it working without `sudo` privileges.
 
 References
 ----------
