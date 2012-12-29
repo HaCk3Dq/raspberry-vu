@@ -78,11 +78,12 @@ In anothe terminal:
 
 Then in another terminal:
 
-    cd ~/Impulse/build/armv6l/test/
+    cd ~/Impulse/build/armv6l/impulse/
     sudo ./impulse.py
 
 If all goes as expected, you should see the Raspberry ladder LED's bouncing
-in time to the music, as well as the on-screen spectrum analyser.
+(as well as the on-screen spectrum analyser) in time to the music playing. 
+Pressing any key will exit the app.
 
 Troubleshooting
 ---------------
