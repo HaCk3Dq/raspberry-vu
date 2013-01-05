@@ -1,5 +1,5 @@
-Impulse / Raspberry VU
-======================
+Impulse / Raspberry Ladder VU Meter
+===================================
 Modified from Ian Halpern's screenlet, this version is specifically hacked to 
 run on a Raspberry Pi, with a Raspberry ladder (http://www.tandyonline.co.uk/raspberry-ladder-kit.html),
 the idea being that the LED's bounce in time to the currently streaming audio.
