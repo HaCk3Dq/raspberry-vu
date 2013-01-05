@@ -19,14 +19,16 @@ def bar(window, x, y, height, value):
 def draw(window):
     h,w = window.getmaxyx()
     audio_sample_array = impulse.getSnapshot(True)
-    x = 4
+    i = 0
     l = len(audio_sample_array) / 4
     sum = 0
-    for i in range(0, l, l / ((w - 10) / 5)):
+    step = l / ((w - 10) / 5)
+    for x in range(3, w - 5, 5):
         value = audio_sample_array[i]
         bar(window, x, 3, h - 6 , value)
-        x += 5
         sum += value
+        i += step
+            
     leds = 8 - min(8, int(sum * 2))
     wiringPy.digital_write_byte((0xFF * (2 ** leds)) & 0xFF)
 
