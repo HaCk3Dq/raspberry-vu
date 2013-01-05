@@ -1,10 +1,13 @@
-Impulse / Raspberry VU
-======================
+Impulse / Raspberry Ladder VU Meter
+===================================
 Modified from Ian Halpern's screenlet, this version is specifically hacked to 
 run on a Raspberry Pi, with a Raspberry ladder (http://www.tandyonline.co.uk/raspberry-ladder-kit.html),
 the idea being that the LED's bounce in time to the currently streaming audio.
 
-To quote the original project README:
+
+![Rasberry Ladder](https://raw.github.com/rm-hull/Impulse/master/raspberry-ladder.png)
+
+To quote the original project's README:
 
 > "Impulse is a bit of eye-candy for your desktop. It is a widget that displays
 a graphical spectrum analyzer on your gnome desktop. It is written in c and
@@ -18,9 +21,11 @@ This hack eshews the cairo graphics and screenlets frippery, and interfaces to
 the Raspberry Ladder via the GPIO, and uses the UNIX curses library to present
 a crude spectum analyser.
 
+See a demonstration of it in action at https://vimeo.com/56822701.
+
 Pre-requisites
 --------------
-1. Make sure you have the full gcc stack installed, and then install the 
+1. Make sure you have git and the full gcc stack installed, and then install the 
    following packages: `sudo apt-get install python-dev libfftw3-dev libpulse-dev`
 
 2. Make sure that the Raspberry Ladder is fully working according to the
@@ -87,6 +92,9 @@ Pressing any key will exit the app.
 
 Troubleshooting
 ---------------
+Tested working with Rev B 512Mb Rasberry Pi (Raspbian "Wheezy" & latest 
+[RPi-Firmware](https://github.com/Hexxeh/rpi-update))
+
 * If Pulseaudio doesn't seem to be working properly:
 
     - do not run pulseaudio in system mode
@@ -111,3 +119,8 @@ References
 
 * https://projects.drogon.net/the-raspberry-ladder-board/
 
+* http://www.tandyonline.co.uk/raspberry-ladder-kit.html
+
+* http://issuu.com/themagpi/docs/the_magpi_issue_7?mode=window
+
+* https://github.com/Hexxeh/rpi-update
