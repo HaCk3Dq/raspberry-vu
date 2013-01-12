@@ -5,7 +5,7 @@ run on a Raspberry Pi, with a Raspberry ladder (http://www.tandyonline.co.uk/ras
 the idea being that the LED's bounce in time to the currently streaming audio.
 
 
-![Rasberry Ladder](https://raw.github.com/rm-hull/Impulse/master/raspberry-ladder.png)
+![Rasberry Ladder](https://raw.github.com/rm-hull/raspberry-vu/master/raspberry-ladder.png)
 
 To quote the original project's README:
 
@@ -83,7 +83,7 @@ In anothe terminal:
 
 Then in another terminal:
 
-    cd ~/Impulse/build/armv6l/impulse/
+    cd ~/rasberry-vu/build/armv6l/impulse/
     sudo ./impulse.py
 
 If all goes as expected, you should see the Raspberry ladder LED's bouncing
