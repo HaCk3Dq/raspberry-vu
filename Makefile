@@ -22,7 +22,7 @@ test: impulse.o
 	gcc -c src/test-impulse.c -o $(BUILD_DIR)/test/test-impulse.o
 	gcc -L$(BUILD_DIR)/test/ -lfftw3 -lpulse\
 		$(BUILD_DIR)/impulse/impulse.o $(BUILD_DIR)/test/test-impulse.o\
-		-o $(BUILD_DIR)/test/test-impulse
+		-o $(BUILD_DIR)/test/test-impulse -lm
 
 impulse.o:
 	gcc -pthread -Wall -fPIC -c src/impulse.c -o $(BUILD_DIR)/impulse/impulse.o
