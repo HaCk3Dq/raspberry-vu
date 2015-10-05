@@ -14,15 +14,17 @@ init:
 
 impulse: init module.o impulse.o
 	cp impulse.py $(BUILD_DIR)/impulse
-	gcc -pthread -shared -Wl,-O2 -Bsymbolic-functions -lfftw3 -lpulse\
+	gcc -pthread -shared -Wl,-O2 -Bsymbolic-functions\
 		-L$(BUILD_DIR)/impulse/ $(BUILD_DIR)/impulse/module.o\
-		$(BUILD_DIR)/impulse/impulse.o -o $(BUILD_DIR)/impulse/impulse.so
+		$(BUILD_DIR)/impulse/impulse.o -o $(BUILD_DIR)/impulse/impulse.so\
+		-lfftw3 -lpulse
 
 test: impulse.o
 	gcc -c src/test-impulse.c -o $(BUILD_DIR)/test/test-impulse.o
-	gcc -L$(BUILD_DIR)/test/ -lfftw3 -lpulse\
+	gcc -L$(BUILD_DIR)/test/\
 		$(BUILD_DIR)/impulse/impulse.o $(BUILD_DIR)/test/test-impulse.o\
-		-o $(BUILD_DIR)/test/test-impulse -lm
+		-o $(BUILD_DIR)/test/test-impulse -lm\
+		-lfftw3 -lpulse
 
 impulse.o:
 	gcc -pthread -Wall -fPIC -c src/impulse.c -o $(BUILD_DIR)/impulse/impulse.o
