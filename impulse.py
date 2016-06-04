@@ -10,6 +10,7 @@ def bar(window, x, y, height, value):
         if i < stop:
             color = (i * 4 / height) + 1
             window.addstr(y + height - i, x, "    ", curses.color_pair(color) | curses.A_BOLD | curses.A_REVERSE)
+        else: window.addstr(y + height - i, x, "    ")
         
 
 def draw(window):
@@ -42,7 +43,6 @@ def main(window):
         draw(window)
         window.refresh()
         time.sleep(0.05)
-        window.clear()
 
     window.clear()
     window.refresh()
