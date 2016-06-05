@@ -33,7 +33,7 @@ def main(window):
   window.nodelay(True)
   window.clear()
   window.refresh()
-  while 1:
+  while window.getch() != 113 and window.getch() != 185:
     draw(window)
     window.refresh()
     time.sleep(0.05)
