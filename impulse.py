@@ -1,8 +1,6 @@
 #!/usr/bin/python2
 
-import curses
-import time
-import impulse
+import curses, time, impulse
 
 def bar(window, x, y, height, value):
   stop = value * height
