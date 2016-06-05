@@ -17,13 +17,14 @@ libpulse
 Build
 --------------
 
-    make clean all
+    git clone https://github.com/HaCk3Dq/spectrumyzer.git
+    make
 
 If this completes successfully, test with:
 
     ./impulse.py
 
-And try to play some music.
+And try to play some music
 
 References
 --------------
