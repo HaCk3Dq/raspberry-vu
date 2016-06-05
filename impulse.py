@@ -13,6 +13,14 @@ def init(window):
   window.clear()
   window.refresh()
 
+def resizeHandler(window):
+  global winH, winW;
+  h, w = window.getmaxyx()
+  if winH != h or winW != w:
+    window.clear()
+    winH = h
+    winW = w
+
 def bar(window, x, y, height, value):
   stop = value * height
   for i in range(height, -1, -1):
@@ -36,6 +44,7 @@ def draw(window):
 def main(window):
   init(window)
   while window.getch() != 113 and window.getch() != 185:
+    resizeHandler(window)
     draw(window)
     window.refresh()
     time.sleep(0.05)
@@ -44,4 +53,5 @@ def main(window):
   window.refresh()
 
 if __name__ == "__main__":
-    curses.wrapper(main)
+  winH = 0; winW = 0
+  curses.wrapper(main)
