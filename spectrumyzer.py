@@ -57,13 +57,15 @@ def render(window):
 # ===== Terminal Rendering =====
 
 def HexToRGB(value):
-  lv = len(value)
-  byteValues = tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
-  return (
-          round(byteValues[0]*(1/255.0),3),
-          round(byteValues[1]*(1/255.0),3),
-          round(byteValues[2]*(1/255.0),3),
-          )
+  try:
+    lv = len(value)
+    byteValues = tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
+    return (round(byteValues[0]*(1/255.0),3),
+            round(byteValues[1]*(1/255.0),3),
+            round(byteValues[2]*(1/255.0),3),)
+  except:
+    print "Error: wrong hex color"
+    exit()
 
 def parseConfig(argList):
   if len(argList) != 10:
