@@ -71,39 +71,6 @@ class Widget(Gtk.Window):
     self.add(self.drawArea)
     self.show_all()
 
-def HexToRGB(value):
-  try:
-    lv = len(value)
-    byteValues = tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
-    return (round(byteValues[0]*(1/255.0),3),
-            round(byteValues[1]*(1/255.0),3),
-            round(byteValues[2]*(1/255.0),3),)
-  except:
-    print "Error: wrong hex color"
-    exit()
-
-def percToFloat(value):
-  value = value.rstrip("%")
-  try:
-    value = int(value) * .01
-  except:
-    print "Error: wrong transparent format"
-    exit()
-  return value
-
-def parseConfig(argList):
-  global rgbaColor, transparent
-  if len(argList) != 12:
-    print "Error: invalid amount of arguments"
-    exit()
-  for e in ("-w", "-h", "-x", "-y", "-c", "-t"): argList.remove(e)
-  # width height xOffset yOffset color transparent
-  argList[4] = HexToRGB(argList[4])
-  rgbaColor = argList[4]
-  transparent = percToFloat(argList[5])
-  window.set_size_request(int(argList[0]), int(argList[1]))
-  window.move(int(argList[3]), int(argList[2]))
-
 def drawFreq(widget, cr):
   cr.set_source_rgba(rgbaColor[0], rgbaColor[1], rgbaColor[2], transparent)
   cr.rectangle(50,75,100,100)
@@ -113,19 +80,90 @@ def updateWindow(window):
   window.queue_draw()
   return True
 
+# ===== Utils =====
+
+def Exit(text):
+  boldRed   = "\033[31m\x1b[1m"
+  boldWhite = "\033[39m\x1b[1m"
+  resetAttr = "\x1b[0m"
+  print boldRed + "Error: " + boldWhite + text + resetAttr
+  exit()
+
+def helpScreen():
+  print "Usage: spectrumyzer [-t|-d] [-c <path>]\n"
+  print "  Render modes:"
+  print "    -t   render to terminal"
+  print "    -d   render to desktop\n"
+  print "  If u choose desktop mode then provide a config path"
+  print "  (you can find an example in spectrumyzer/spectrum.conf)"
+  print "    -c <path>"
+
+def renderToTerminal(argList):
+  if len(argList) == 0:
+    helpScreen()
+    exit()
+  elif (argList[0] == "-h"):
+    helpScreen()
+    exit()
+  elif (argList[0] == "-t"): return True
+  elif (argList[0] == "-d"): return False
+  else:
+    helpScreen()
+    Exit("unknown command")
+
+def parseConfig(argList, window):
+  global rgbaColor, transparent
+  if len(argList) != 3:
+    helpScreen()
+    Exit("not enough arguments")
+  try:
+    with open(argList[2]) as f: conf = f.readlines()
+  except: Exit("cannot open config file")
+  
+  config = {}
+  for e in conf:
+    value = e[e.find("=")+2:].rstrip("\n")
+    try: value = int(value)
+    except:
+      if value.find("%") != -1: value = percToFloat(value)
+      elif value[0] == "#": value = HexToRGB(value)
+      else: Exit("wrong " + e[:e.find(" = ")] + " config value")
+    config[e[:e.find(" = ")]] = value
+
+  window.set_size_request(config["width"], config["height"])
+  window.move(config["xOffset"], config["yOffset"])
+  rgbaColor = config["color"]
+  transparent = config["transparent"]
+
+def HexToRGB(value):
+  value = value.lstrip("#")
+  lv = len(value)
+  try:
+    byteValues = tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
+    return (round(byteValues[0]*(1/255.0),3),
+            round(byteValues[1]*(1/255.0),3),
+            round(byteValues[2]*(1/255.0),3),)
+  except:
+    Exit("wrong hex color")
+
+def percToFloat(value):
+  value = value.rstrip("%")
+  try: value = int(value) * .01
+  except: Exit("wrong transparent format")
+  return value
+
 # ===== main =====
 
 if __name__ == "__main__":
-  argList = sys.argv[1:]
-  if len(argList) == 0:
+  if renderToTerminal(sys.argv[1:]):
     winH = winW = int
     curses.wrapper(render)
   else:
-    rgbaColor   = (0, 0, 0)
+    rgbaColor = (0,0,0)
     transparent = float
-
     window = Widget()
-    parseConfig(argList)
+
+    parseConfig(sys.argv[1:], window)
     signal.signal(signal.SIGINT, signal.SIG_DFL) # make ^C work
     GLib.timeout_add(20, updateWindow, window)
     Gtk.main()
