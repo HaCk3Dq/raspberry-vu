@@ -54,7 +54,22 @@ def render(window):
   window.clear()
   window.refresh()
 
-# ===== Terminal Rendering =====
+# ===== Desktop Rendering =====
+
+class Widget(Gtk.Window):
+  def __init__(self):
+    Gtk.Window.__init__(self, skip_pager_hint=True, skip_taskbar_hint=True)
+    self.set_wmclass("sildesktopwidget","sildesktopwidget")
+    self.set_type_hint(Gdk.WindowTypeHint.DESKTOP)
+    self.set_keep_below(True)
+    screen = self.get_screen()
+    rgba = screen.get_rgba_visual()
+    self.set_visual(rgba)
+    self.override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(0,0,0,0))
+    self.drawArea = Gtk.DrawingArea()
+    self.drawArea.connect('draw', drawFreq)
+    self.add(self.drawArea)
+    self.show_all()
 
 def HexToRGB(value):
   try:
@@ -67,33 +82,30 @@ def HexToRGB(value):
     print "Error: wrong hex color"
     exit()
 
+def percToFloat(value):
+  value = value.rstrip("%")
+  try:
+    value = int(value) * .01
+  except:
+    print "Error: wrong transparent format"
+    exit()
+  return value
+
 def parseConfig(argList):
-  if len(argList) != 10:
+  global rgbaColor, transparent
+  if len(argList) != 12:
     print "Error: invalid amount of arguments"
     exit()
-  for e in ("-w", "-h", "-x", "-y", "-c"): argList.remove(e)
+  for e in ("-w", "-h", "-x", "-y", "-c", "-t"): argList.remove(e)
+  # width height xOffset yOffset color transparent
   argList[4] = HexToRGB(argList[4])
-  print argList
-  window.set_size_request(600,400)
-  window.move(300,300)
-
-class Widget(Gtk.Window):
-  def __init__(self):
-    Gtk.Window.__init__(self, skip_pager_hint=True, skip_taskbar_hint=True)
-    self.set_wmclass("sildesktopwidget","sildesktopwidget")
-    self.set_type_hint(Gdk.WindowTypeHint.DESKTOP)
-    self.set_keep_below(True)
-    screen = self.get_screen()
-    rgba = screen.get_rgba_visual()
-    self.set_visual(rgba)
-    self.override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(1,1,1,1))
-    self.drawArea = Gtk.DrawingArea()
-    self.drawArea.connect('draw', drawFreq)
-    self.add(self.drawArea)
-    self.show_all()
+  rgbaColor = argList[4]
+  transparent = percToFloat(argList[5])
+  window.set_size_request(int(argList[0]), int(argList[1]))
+  window.move(int(argList[3]), int(argList[2]))
 
 def drawFreq(widget, cr):
-  cr.set_source_rgba(0,0.15,0.2,1)
+  cr.set_source_rgba(rgbaColor[0], rgbaColor[1], rgbaColor[2], transparent)
   cr.rectangle(50,75,100,100)
   cr.fill()
 
@@ -109,7 +121,9 @@ if __name__ == "__main__":
     winH = winW = int
     curses.wrapper(render)
   else:
-    rgbaColor = [0, 0, 0]
+    rgbaColor   = (0, 0, 0)
+    transparent = float
+
     window = Widget()
     parseConfig(argList)
     signal.signal(signal.SIGINT, signal.SIG_DFL) # make ^C work
