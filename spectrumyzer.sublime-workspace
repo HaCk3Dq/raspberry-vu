@@ -4,6 +4,18 @@
 		"selected_items":
 		[
 			[
+				"arg",
+				"argList"
+			],
+			[
+				"re",
+				"return"
+			],
+			[
+				"ar",
+				"argList"
+			],
+			[
 				"Tue",
 				"True"
 			],
@@ -192,21 +204,18 @@
 	"buffers":
 	[
 		{
-			"contents": "#!/usr/bin/python2\n\nimport curses, time, impulse\n\nimport random\nimport gi\ngi.require_version('Gtk', '3.0')\nfrom gi.repository import Gtk, Gdk, GLib\nimport signal, os\n\n# =====\ndef init(window):\n  curses.init_pair(1, curses.COLOR_BLUE, curses.COLOR_BLACK)\n  curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)\n  curses.init_pair(3, curses.COLOR_YELLOW, curses.COLOR_BLACK)\n  curses.init_pair(4, curses.COLOR_RED, curses.COLOR_BLACK)\n  curses.curs_set(0)\n  curses.use_default_colors()\n  window.nodelay(True)\n  window.clear()\n  window.refresh()\n\ndef resizeHandler(window):\n  global winH, winW;\n  h, w = window.getmaxyx()\n  if winH != h or winW != w:\n    window.clear()\n    winH = h\n    winW = w\n\ndef printBar(window, x, y, height, value):\n  for i in range(height, -1, -1):\n    if i < value * height:\n      color = (i * 4 / height) + 1\n      window.addstr(y + height - i, x, \"    \", curses.color_pair(color) | curses.A_BOLD | curses.A_REVERSE)\n    else:\n      window.addstr(y + height - i, x, \"    \")\n\ndef draw(window, h, w):\n  audio_sample_array = impulse.getSnapshot(True)\n  i = 0\n  length = len(audio_sample_array) / 4\n  step = length / ((w - 10) / 5)\n  for x in range(3, w - 5, 5):\n    value = audio_sample_array[i]\n    printBar(window, x, 3, h - 6 , value)\n    i += step\n\ndef main(window):\n  init(window)\n  while window.getch() != 113 and window.getch() != 185:\n    resizeHandler(window)\n    draw(window, winH, winW)\n    window.refresh()\n    time.sleep(0.05)\n\n  window.clear()\n  window.refresh()\n\nif __name__ == \"__main__\":\n  winH = winW = int\n  curses.wrapper(main)\n",
 			"file": "spectrumyzer.py",
-			"file_size": 1567,
-			"file_write_time": 131154350556883193,
 			"settings":
 			{
-				"buffer_size": 1575,
+				"buffer_size": 3034,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "ui.py",
+			"file": "/home/hacked/dotfiles/sublime-text-3/Packages/User/Preferences.sublime-settings",
 			"settings":
 			{
-				"buffer_size": 1157,
+				"buffer_size": 532,
 				"line_ending": "Unix"
 			}
 		}
@@ -218,13 +227,17 @@
 	"build_varint": "",
 	"command_palette":
 	{
-		"height": 44.0,
-		"last_filter": "",
+		"height": 354.0,
+		"last_filter": "menu",
 		"selected_items":
 		[
 			[
 				"menu",
 				"View: Toggle Menu"
+			],
+			[
+				"pres",
+				"Preferences: Settings - User"
 			],
 			[
 				"bash",
@@ -387,7 +400,7 @@
 				"Git: Status"
 			]
 		],
-		"width": 449.0
+		"width": 503.0
 	},
 	"console":
 	{
@@ -681,6 +694,10 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"checkRenderOption",
+			"draw_cb",
+			"draw",
+			"winH",
 			"1",
 			"update",
 			"cr",
@@ -804,10 +821,6 @@
 			"asset_host",
 			"root_url",
 			"3000",
-			"referral_code",
-			"free_bookings",
-			"show",
-			"free_bookings_credited",
 			"referral_code"
 		],
 		"highlight": true,
@@ -861,15 +874,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1575,
+						"buffer_size": 3034,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								174,
-								174
+								1931,
+								1931
 							]
 						],
 						"settings":
@@ -879,12 +892,27 @@
 							{
 								"close":
 								{
+									"1":
+									[
+										1930,
+										1931
+									]
 								},
 								"icon":
 								{
+									"1":
+									[
+										"",
+										"brackethighlighter.default"
+									]
 								},
 								"open":
 								{
+									"1":
+									[
+										1922,
+										1923
+									]
 								},
 								"unmatched":
 								{
@@ -957,7 +985,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 171.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
@@ -965,19 +993,19 @@
 				},
 				{
 					"buffer": 1,
-					"file": "ui.py",
+					"file": "/home/hacked/dotfiles/sublime-text-3/Packages/User/Preferences.sublime-settings",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1157,
+						"buffer_size": 532,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								137,
-								783
+								397,
+								397
 							]
 						],
 						"settings":
@@ -987,12 +1015,27 @@
 							{
 								"close":
 								{
+									"1":
+									[
+										530,
+										531
+									]
 								},
 								"icon":
 								{
+									"1":
+									[
+										"Packages/BracketHighlighter/icons/curly_bracket.png",
+										"brackethighlighter.default"
+									]
 								},
 								"open":
 								{
+									"1":
+									[
+										0,
+										1
+									]
 								},
 								"unmatched":
 								{
@@ -1056,13 +1099,12 @@
 								"bh_tag_close",
 								"bh_tag_content"
 							],
-							"bs_sintax": "python",
-							"buffer_scroll_name": "683cdc23",
+							"bs_sintax": "json",
+							"buffer_scroll_name": "4daca2b5",
 							"color_scheme": "Packages/User/Color Highlighter/themes/Code-Lover (SL).tmTheme",
 							"spell_check": false,
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
+							"syntax": "Packages/JavaScript/JSON.sublime-syntax",
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
@@ -1104,7 +1146,7 @@
 			1.0
 		]
 	},
-	"menu_visible": false,
+	"menu_visible": true,
 	"output.exec":
 	{
 		"height": 112.0
@@ -1653,7 +1695,7 @@
 		[
 			[
 				"",
-				"~/Documents/D/vk/vk.sublime-project"
+				"~/dotfiles/dotfiles.sublime-project"
 			],
 			[
 				"menu",
