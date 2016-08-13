@@ -5,6 +5,77 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib
 
+# ===== Utils =====
+
+def Exit(text):
+  boldRed   = "\033[31m\x1b[1m"
+  boldWhite = "\033[39m\x1b[1m"
+  resetAttr = "\x1b[0m"
+  print boldRed + "Error: " + boldWhite + text + resetAttr
+  exit()
+
+def helpScreen():
+  print "Usage: spectrumyzer [-t|-d] [-c <path>]\n"
+  print "  Render modes:"
+  print "    -t   render to terminal"
+  print "    -d   render to desktop\n"
+  print "  If u choose desktop mode then provide a config path"
+  print "  (you can find an example in spectrumyzer/spectrum.conf)"
+  print "    -c <path>"
+
+def isRenderToTerminal(argList):
+  if len(argList) == 0:
+    helpScreen()
+    exit()
+  elif (argList[0] == "-h"):
+    helpScreen()
+    exit()
+  elif (argList[0] == "-t"): return True
+  elif (argList[0] == "-d"): return False
+  else:
+    helpScreen()
+    Exit("unknown command")
+
+def parseConfig(argList, window):
+  global rgbaColor, transparent, config
+  if len(argList) != 3:
+    helpScreen()
+    Exit("not enough arguments")
+  try:
+    with open(argList[2]) as f: conf = f.readlines()
+  except: Exit("cannot open config file")
+  
+  for e in conf:
+    value = e[e.find("=")+2:].rstrip("\n")
+    try: value = int(value)
+    except:
+      if value.find("%") != -1: value = percToFloat(value)
+      elif value[0] == "#": value = HexToRGB(value)
+      else: Exit("wrong " + e[:e.find(" = ")] + " config value")
+    config[e[:e.find(" = ")]] = value
+
+  window.set_size_request(config["width"], config["height"])
+  window.move(config["xOffset"], config["yOffset"])
+  rgbaColor = config["color"]
+  transparent = config["transparent"]
+
+def HexToRGB(value):
+  value = value.lstrip("#")
+  lv = len(value)
+  try:
+    byteValues = tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
+    return (round(byteValues[0]*(1/255.0),3),
+            round(byteValues[1]*(1/255.0),3),
+            round(byteValues[2]*(1/255.0),3),)
+  except:
+    Exit("wrong hex color")
+
+def percToFloat(value):
+  value = value.rstrip("%")
+  try: value = int(value) * .01
+  except: Exit("wrong transparent format")
+  return value
+
 # ===== Terminal Rendering =====
 
 def init(window):
@@ -71,96 +142,27 @@ class Widget(Gtk.Window):
     self.add(self.drawArea)
     self.show_all()
 
-def drawFreq(widget, cr):
-  cr.set_source_rgba(rgbaColor[0], rgbaColor[1], rgbaColor[2], transparent)
-  cr.rectangle(50,75,100,100)
-  cr.fill()
-
 def updateWindow(window):
   window.queue_draw()
   return True
 
-# ===== Utils =====
-
-def Exit(text):
-  boldRed   = "\033[31m\x1b[1m"
-  boldWhite = "\033[39m\x1b[1m"
-  resetAttr = "\x1b[0m"
-  print boldRed + "Error: " + boldWhite + text + resetAttr
-  exit()
-
-def helpScreen():
-  print "Usage: spectrumyzer [-t|-d] [-c <path>]\n"
-  print "  Render modes:"
-  print "    -t   render to terminal"
-  print "    -d   render to desktop\n"
-  print "  If u choose desktop mode then provide a config path"
-  print "  (you can find an example in spectrumyzer/spectrum.conf)"
-  print "    -c <path>"
-
-def renderToTerminal(argList):
-  if len(argList) == 0:
-    helpScreen()
-    exit()
-  elif (argList[0] == "-h"):
-    helpScreen()
-    exit()
-  elif (argList[0] == "-t"): return True
-  elif (argList[0] == "-d"): return False
-  else:
-    helpScreen()
-    Exit("unknown command")
-
-def parseConfig(argList, window):
-  global rgbaColor, transparent
-  if len(argList) != 3:
-    helpScreen()
-    Exit("not enough arguments")
-  try:
-    with open(argList[2]) as f: conf = f.readlines()
-  except: Exit("cannot open config file")
-  
-  config = {}
-  for e in conf:
-    value = e[e.find("=")+2:].rstrip("\n")
-    try: value = int(value)
-    except:
-      if value.find("%") != -1: value = percToFloat(value)
-      elif value[0] == "#": value = HexToRGB(value)
-      else: Exit("wrong " + e[:e.find(" = ")] + " config value")
-    config[e[:e.find(" = ")]] = value
-
-  window.set_size_request(config["width"], config["height"])
-  window.move(config["xOffset"], config["yOffset"])
-  rgbaColor = config["color"]
-  transparent = config["transparent"]
-
-def HexToRGB(value):
-  value = value.lstrip("#")
-  lv = len(value)
-  try:
-    byteValues = tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
-    return (round(byteValues[0]*(1/255.0),3),
-            round(byteValues[1]*(1/255.0),3),
-            round(byteValues[2]*(1/255.0),3),)
-  except:
-    Exit("wrong hex color")
-
-def percToFloat(value):
-  value = value.rstrip("%")
-  try: value = int(value) * .01
-  except: Exit("wrong transparent format")
-  return value
+def drawFreq(widget, cr):
+  cr.set_source_rgba(rgbaColor[0], rgbaColor[1], rgbaColor[2], transparent)
+  audio_sample_array = impulse.getSnapshot(True)[::4]
+  for i, freq in enumerate(audio_sample_array):
+    cr.rectangle(30*i, config["height"], 25, -config["height"]*freq)
+  cr.fill()
 
 # ===== main =====
 
 if __name__ == "__main__":
-  if renderToTerminal(sys.argv[1:]):
+  if isRenderToTerminal(sys.argv[1:]):
     winH = winW = int
     curses.wrapper(render)
   else:
     rgbaColor = (0,0,0)
     transparent = float
+    config = {}
     window = Widget()
 
     parseConfig(sys.argv[1:], window)
