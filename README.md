@@ -30,7 +30,7 @@ Build
 
 If this completes successfully, test with:
 
-    ./impulse.py
+    ./spectrumyzer.py -t
 
 And try to play some music
 
