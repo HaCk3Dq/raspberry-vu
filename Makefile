@@ -8,7 +8,7 @@ init:
 	mkdir -p $(BUILD_DIR)
 
 impulse: init module.o impulse.o
-	cp impulse.py $(BUILD_DIR)
+	cp spectrumyzer.py $(BUILD_DIR)
 	gcc -pthread -shared -Wl,-O2 -Bsymbolic-functions\
 		-L$(BUILD_DIR)/ $(BUILD_DIR)/module.o\
 		$(BUILD_DIR)/impulse.o -o $(BUILD_DIR)/impulse.so\
