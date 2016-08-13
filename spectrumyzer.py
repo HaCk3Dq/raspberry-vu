@@ -154,7 +154,7 @@ def drawFreq(widget, cr):
   cr.set_source_rgba(rgbaColor[0], rgbaColor[1], rgbaColor[2], transparent)
   audio_sample = impulse.getSnapshot(True)[:128]
 
-  raw = map(lambda a, b: a+b, audio_sample[::2], audio_sample[1::2])
+  raw = map(lambda a, b: (a+b)/2, audio_sample[::2], audio_sample[1::2])
   raw = map(lambda y: round(-config["height"]*y), raw)
   if prev == []: prev = raw
   prev = map(lambda p, r: delta(p, r), prev, raw)
