@@ -146,11 +146,21 @@ def updateWindow(window):
   window.queue_draw()
   return True
 
+def delta(p, r):
+  return p+((r-p)/1.3)
+
 def drawFreq(widget, cr):
+  global prev
   cr.set_source_rgba(rgbaColor[0], rgbaColor[1], rgbaColor[2], transparent)
-  audio_sample_array = impulse.getSnapshot(True)[::4]
-  for i, freq in enumerate(audio_sample_array):
-    cr.rectangle(30*i, config["height"], 25, -config["height"]*freq)
+  audio_sample = impulse.getSnapshot(True)[:128]
+
+  raw = map(lambda a, b: a+b, audio_sample[::2], audio_sample[1::2])
+  raw = map(lambda y: round(-config["height"]*y), raw)
+  if prev == []: prev = raw
+  prev = map(lambda p, r: delta(p, r), prev, raw)
+
+  for i, freq in enumerate(prev):
+    cr.rectangle(30*i, config["height"], 25, freq)
   cr.fill()
 
 # ===== main =====
@@ -160,12 +170,11 @@ if __name__ == "__main__":
     winH = winW = int
     curses.wrapper(render)
   else:
-    rgbaColor = (0,0,0)
-    transparent = float
     config = {}
+    prev = []
     window = Widget()
 
     parseConfig(sys.argv[1:], window)
     signal.signal(signal.SIGINT, signal.SIG_DFL) # make ^C work
-    GLib.timeout_add(20, updateWindow, window)
+    GLib.timeout_add(40, updateWindow, window)
     Gtk.main()
