@@ -1,7 +1,13 @@
 Spectrumyzer
 ==============
 
-<img src='scrot.png'>
+Desktop mode
+--------------
+<img src='scrotDesk.png'>
+
+Terminal mode
+--------------
+<img src='scrotTerm.png'>
 
 Dependencies
 --------------
@@ -10,6 +16,8 @@ Make sure you have `git` and the full `gcc` stack installed, and then install th
 
 ```
 python2
+cairo
+python2-cairo
 fftw
 libpulse
 ```
