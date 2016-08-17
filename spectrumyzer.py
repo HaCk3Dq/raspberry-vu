@@ -1,6 +1,6 @@
 #!/usr/bin/python2
 
-import sys, signal, os, curses, time, impulse
+import sys, signal, os, curses, time, impulse, math, subprocess
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib
@@ -14,35 +14,33 @@ def Exit(text):
   print boldRed + "Error: " + boldWhite + text + resetAttr
   exit()
 
-def helpScreen():
-  print "Usage: spectrumyzer [-t|-d] [-c <path>]\n"
-  print "  Render modes:"
-  print "    -t   render to terminal"
-  print "    -d   render to desktop\n"
-  print "  If u choose desktop mode then provide a config path"
-  print "  (you can find an example in spectrumyzer/spectrum.conf)"
-  print "    -c <path>"
+def createConfig(configPath):
+  boldGreen   = "\033[32m\x1b[1m"
+  resetAttr = "\x1b[0m"
+  print "It seems you have started Spectrumyzer for the first time.\nI have generated configuration file for you at the " +\
+    boldGreen + configPath + resetAttr
 
-def isRenderToTerminal(argList):
-  if len(argList) == 0:
-    helpScreen()
-    exit()
-  elif (argList[0] == "-h"):
-    helpScreen()
-    exit()
-  elif (argList[0] == "-t"): return True
-  elif (argList[0] == "-d"): return False
-  else:
-    helpScreen()
-    Exit("unknown command")
+  resolution   = subprocess.check_output("xdpyinfo|awk -F'[ x]+' '/dimensions:/{print $3,$4}'", shell=True).split(" ")
+  screenWidth  = resolution[0]
+  screenHeight = int(resolution[1])
 
-def parseConfig(argList, window):
-  global rgbaColor, transparent, config
-  if len(argList) != 3:
-    helpScreen()
-    Exit("not enough arguments")
+  f = open(configPath,"w")
+
+  config = "width = " + screenWidth + "\n" +\
+  "height = " + str(screenHeight/2) + "\n" +\
+  "xOffset = 0\n" +\
+  "yOffset = " + str(screenHeight/2) + "\n" +\
+  "color = #ffffff\n" +\
+  "transparent = 50%\n"
+  f.write(config)
+
+  f.close()
+
+
+def parseConfig(configPath, window):
+  global config
   try:
-    with open(argList[2]) as f: conf = f.readlines()
+    with open(configPath) as f: conf = f.readlines()
   except: Exit("cannot open config file")
   
   for e in conf:
@@ -56,8 +54,7 @@ def parseConfig(argList, window):
 
   window.set_size_request(config["width"], config["height"])
   window.move(config["xOffset"], config["yOffset"])
-  rgbaColor = config["color"]
-  transparent = config["transparent"]
+  return config["width"], config["color"], config["transparent"]
 
 def HexToRGB(value):
   value = value.lstrip("#")
@@ -76,56 +73,7 @@ def percToFloat(value):
   except: Exit("wrong transparent format")
   return value
 
-# ===== Terminal Rendering =====
-
-def init(window):
-  curses.init_pair(1, curses.COLOR_BLUE, curses.COLOR_BLACK)
-  curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
-  curses.init_pair(3, curses.COLOR_YELLOW, curses.COLOR_BLACK)
-  curses.init_pair(4, curses.COLOR_RED, curses.COLOR_BLACK)
-  curses.curs_set(0)
-  curses.use_default_colors()
-  window.nodelay(True)
-  window.clear()
-  window.refresh()
-
-def resizeHandler(window):
-  global winH, winW;
-  h, w = window.getmaxyx()
-  if winH != h or winW != w:
-    window.clear()
-    winH = h
-    winW = w
-
-def printBar(window, x, y, height, value):
-  for i in range(height, -1, -1):
-    if i < value * height:
-      color = (i * 4 / height) + 1
-      window.addstr(y + height - i, x, "    ", curses.color_pair(color) | curses.A_BOLD | curses.A_REVERSE)
-    else:
-      window.addstr(y + height - i, x, "    ")
-
-def terminalDraw(window, h, w):
-  audio_sample_array = impulse.getSnapshot(True)
-  i = 0
-  length = len(audio_sample_array) / 4
-  step = length / ((w - 10) / 5)
-  for x in range(3, w - 5, 5):
-    value = audio_sample_array[i]
-    printBar(window, x, 3, h - 6 , value)
-    i += step
-
-def render(window):
-  init(window)
-  while window.getch() != 113 and window.getch() != 185:
-    resizeHandler(window)
-    terminalDraw(window, winH, winW)
-    window.refresh()
-    time.sleep(0.05)
-  window.clear()
-  window.refresh()
-
-# ===== Desktop Rendering =====
+# ===== Render =====
 
 class Widget(Gtk.Window):
   def __init__(self):
@@ -150,7 +98,7 @@ def delta(p, r):
   return p+((r-p)/1.3)
 
 def drawFreq(widget, cr):
-  global prev
+  global prev, screenWidth
   cr.set_source_rgba(rgbaColor[0], rgbaColor[1], rgbaColor[2], transparent)
   audio_sample = impulse.getSnapshot(True)[:128]
 
@@ -159,22 +107,26 @@ def drawFreq(widget, cr):
   if prev == []: prev = raw
   prev = map(lambda p, r: delta(p, r), prev, raw)
 
+  barWidth = math.ceil((screenWidth-320)/64)
+  padding = barWidth + 5
+
   for i, freq in enumerate(prev):
-    cr.rectangle(30*i, config["height"], 25, freq)
+    cr.rectangle(padding*i, config["height"], barWidth, freq)
   cr.fill()
 
 # ===== main =====
 
 if __name__ == "__main__":
-  if isRenderToTerminal(sys.argv[1:]):
-    winH = winW = int
-    curses.wrapper(render)
-  else:
-    config = {}
-    prev = []
-    window = Widget()
+  configPath = os.path.expanduser("~/.spectrum.conf")
+  config = {}
+  prev = []
+  window = Widget()
+  screenWidth = 0
+  screenHeight = 0
 
-    parseConfig(sys.argv[1:], window)
-    signal.signal(signal.SIGINT, signal.SIG_DFL) # make ^C work
-    GLib.timeout_add(40, updateWindow, window)
-    Gtk.main()
+  if not os.path.isfile(configPath): createConfig(configPath)
+  screenWidth, rgbaColor, transparent = parseConfig(configPath, window)
+
+  signal.signal(signal.SIGINT, signal.SIG_DFL) # make ^C work
+  GLib.timeout_add(40, updateWindow, window)
+  Gtk.main()
