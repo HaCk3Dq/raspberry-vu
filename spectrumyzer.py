@@ -20,7 +20,7 @@ def createConfig(configPath):
   print "It seems you have started Spectrumyzer for the first time.\nI have generated configuration file for you at the " +\
     boldGreen + configPath + resetAttr
 
-  resolution   = subprocess.check_output("xdpyinfo|awk -F'[ x]+' '/dimensions:/{print $3,$4}'", shell=True).split(" ")
+  resolution   = subprocess.check_output("xrandr|grep '*'", shell=True).split("   ")[1].split("x")
   screenWidth  = resolution[0]
   screenHeight = int(resolution[1])
 
@@ -35,7 +35,6 @@ def createConfig(configPath):
   f.write(config)
 
   f.close()
-
 
 def parseConfig(configPath, window):
   global config
@@ -107,7 +106,7 @@ def drawFreq(widget, cr):
   if prev == []: prev = raw
   prev = map(lambda p, r: delta(p, r), prev, raw)
 
-  barWidth = math.ceil((screenWidth-320)/64)
+  barWidth = math.ceil((screenWidth-320)/64.0)
   padding = barWidth + 5
 
   for i, freq in enumerate(prev):
