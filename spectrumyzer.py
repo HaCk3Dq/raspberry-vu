@@ -26,7 +26,7 @@ def createConfig(configPath):
 
   f = open(configPath,"w")
 
-  offset = "4" if screenWidth = "1366" else "0"
+  offset = "4" if screenWidth == "1366" else "0"
 
   config = "width = " + screenWidth + "\n" +\
   "height = " + str(screenHeight/2) + "\n" +\
