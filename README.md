@@ -1,13 +1,7 @@
 Spectrumyzer
 ==============
 
-Desktop mode
---------------
 <img src='scrotDesk.png'>
-
-Terminal mode
---------------
-<img src='scrotTerm.png'>
 
 Dependencies
 --------------
@@ -30,7 +24,7 @@ Build
 
 If this completes successfully, test with:
 
-    ./spectrumyzer.py -t
+    ./spectrumyzer.py
 
 And try to play some music
 
