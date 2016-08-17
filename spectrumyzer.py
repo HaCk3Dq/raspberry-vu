@@ -26,9 +26,11 @@ def createConfig(configPath):
 
   f = open(configPath,"w")
 
+  offset = "4" if screenWidth = "1366" else "0"
+
   config = "width = " + screenWidth + "\n" +\
   "height = " + str(screenHeight/2) + "\n" +\
-  "xOffset = 0\n" +\
+  "xOffset = "+ offset + "\n" +\
   "yOffset = " + str(screenHeight/2) + "\n" +\
   "color = #ffffff\n" +\
   "transparent = 50%\n"
@@ -122,7 +124,7 @@ if __name__ == "__main__":
 
   if not os.path.isfile(configPath): createConfig(configPath)
   screenWidth, rgbaColor, transparent = parseConfig(configPath, window)
-  
+
   barWidth = math.ceil((screenWidth-320)/64.0)
   padding = barWidth + 5
 
