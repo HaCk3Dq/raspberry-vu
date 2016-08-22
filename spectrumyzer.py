@@ -33,6 +33,7 @@ def createConfig(configPath):
   "xOffset = "+ offset + "\n" +\
   "yOffset = " + str(screenHeight/2) + "\n" +\
   "color = #ffffff\n" +\
+  "source = 0\n" +\
   "transparent = 50%\n"
   f.write(config)
 
@@ -55,7 +56,7 @@ def parseConfig(configPath, window):
 
   window.set_size_request(config["width"], config["height"])
   window.move(config["xOffset"], config["yOffset"])
-  return config["width"], config["color"], config["transparent"]
+  return config["width"], config["color"], config["transparent"], config["source"]
 
 def HexToRGB(value):
   value = value.lstrip("#")
@@ -102,7 +103,6 @@ def drawFreq(widget, cr):
   global prev, screenWidth, barWidth, padding
   cr.set_source_rgba(rgbaColor[0], rgbaColor[1], rgbaColor[2], transparent)
   audio_sample = impulse.getSnapshot(True)[:128]
-
   raw = map(lambda a, b: (a+b)/2, audio_sample[::2], audio_sample[1::2])
   raw = map(lambda y: round(-config["height"]*y), raw)
   if prev == []: prev = raw
@@ -123,8 +123,9 @@ if __name__ == "__main__":
   screenHeight = 0
 
   if not os.path.isfile(configPath): createConfig(configPath)
-  screenWidth, rgbaColor, transparent = parseConfig(configPath, window)
-
+  screenWidth, rgbaColor, transparent, source = parseConfig(configPath, window)
+  impulse.setup(source)
+  impulse.start()
   barWidth = math.ceil((screenWidth-320)/64.0)
   padding = barWidth + 5
 

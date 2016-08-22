@@ -27,4 +27,6 @@ double *im_getSnapshot( int fft );
 
 void im_start( void );
 
+void im_setup( int source );
+
 void im_stop( void );

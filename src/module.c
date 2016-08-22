@@ -31,7 +31,7 @@ static PyObject * impulse_getSnapshot( PyObject *self, PyObject *args, PyObject 
 
 	int fft = 0;
 
-	static char *kwlist[] = { "fft" };
+	static char *kwlist[] = { "fft", NULL };
 
 	PyArg_ParseTupleAndKeywords( args, kwargs, "b", kwlist, &fft );
 
@@ -46,10 +46,31 @@ static PyObject * impulse_getSnapshot( PyObject *self, PyObject *args, PyObject 
 	return magnitude; // PyString_FromStringAndSize( (char *) snapshot, CHUNK );
 }
 
+static PyObject * impulse_start( PyObject *self, PyObject *args, PyObject *kwargs ) {
+
+	im_start( );
+
+	return Py_BuildValue("");
+}
+
+static PyObject * impulse_setup( PyObject *self, PyObject *args, PyObject *kwargs ) {
+	int source = 0;
+
+	static char *kwlist[] = {"source", NULL};
+
+	PyArg_ParseTupleAndKeywords( args, kwargs, "i", kwlist, &source );
+	printf("Read : %d\n", source);
+	im_setup(source);
+
+	return Py_BuildValue("");
+}
+
 static PyObject *ImpulseError;
 
 static PyMethodDef ImpulseMethods[ ] = {
 	{ "getSnapshot",  (PyCFunction)impulse_getSnapshot, METH_VARARGS | METH_KEYWORDS, "Returns the current audio snapshot from Pulseaudio." },
+	{ "setup",  (PyCFunction)impulse_setup, METH_VARARGS | METH_KEYWORDS, "Setup stuff." },
+	{ "start",  (PyCFunction)impulse_start, 0, "Start the system." },
 	{ NULL, NULL, 0, NULL }		/* Sentinel */
 };
 
@@ -65,9 +86,6 @@ PyMODINIT_FUNC initimpulse ( void ) {
 	PyModule_AddObject( m, "error", ImpulseError );
 
 	Py_AtExit( &im_stop );
-
-	im_start( );
-
 	return;
 }
 
