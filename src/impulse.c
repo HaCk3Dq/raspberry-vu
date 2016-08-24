@@ -59,7 +59,7 @@ static void quit( int ret ) {
 
 static void get_source_info_callback( pa_context *c, const pa_source_info *i, int is_last, void *userdata ) {
 
-	if(swept_through)
+	if(swept_through || !i)
 		return;
 	if ( is_last || device != NULL )
 		swept_through = 1;
