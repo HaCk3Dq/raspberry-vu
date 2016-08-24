@@ -14,6 +14,24 @@ def Exit(text):
   print boldRed + "Error: " + boldWhite + text + resetAttr
   exit()
 
+def getDefaultConfig():
+  default = {}
+  resolution   = subprocess.check_output("xrandr|grep '*'", shell=True).split("   ")[1].split("x")
+  screenWidth  = resolution[0]
+  screenHeight = int(resolution[1])
+
+  offset = "4" if screenWidth == "1366" else "0"
+
+  default["width"] = screenWidth
+  default["height"] = screenHeight/2
+  default["xOffset"] = offset
+  default["yOffset"] = screenHeight/2
+  default["scale"] = 1
+  default["color"] = "#ffffff"
+  default["transparent"] = "50%"
+
+  return default
+
 def createConfig(configPath):
   boldGreen   = "\033[32m\x1b[1m"
   resetAttr = "\x1b[0m"
@@ -26,15 +44,12 @@ def createConfig(configPath):
 
   f = open(configPath,"w")
 
-  offset = "4" if screenWidth == "1366" else "0"
+  default = getDefaultConfig()
+  config = ""
 
-  config = "width = " + screenWidth + "\n" +\
-  "height = " + str(screenHeight/2) + "\n" +\
-  "xOffset = "+ offset + "\n" +\
-  "yOffset = " + str(screenHeight/2) + "\n" +\
-  "color = #ffffff\n" +\
-  "source = 0\n" +\
-  "transparent = 50%\n"
+  for e in default:
+    config += str(e) + " = " + str(default[e]) + "\n"
+
   f.write(config)
 
   f.close()
@@ -103,8 +118,9 @@ def drawFreq(widget, cr):
   global prev, screenWidth, barWidth, padding
   cr.set_source_rgba(rgbaColor[0], rgbaColor[1], rgbaColor[2], transparent)
   audio_sample = impulse.getSnapshot(True)[:128]
+
   raw = map(lambda a, b: (a+b)/2, audio_sample[::2], audio_sample[1::2])
-  raw = map(lambda y: round(-config["height"]*y), raw)
+  raw = map(lambda y: round(-config["height"]*config["scale"]*y), raw)
   if prev == []: prev = raw
   prev = map(lambda p, r: delta(p, r), prev, raw)
 
@@ -116,7 +132,7 @@ def drawFreq(widget, cr):
 
 if __name__ == "__main__":
   configPath = os.path.expanduser("~/.spectrum.conf")
-  config = {}
+  config = getDefaultConfig()
   prev = []
   window = Widget()
   screenWidth = 0
