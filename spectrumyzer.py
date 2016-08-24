@@ -29,6 +29,7 @@ def getDefaultConfig():
   default["scale"] = 1
   default["color"] = "#ffffff"
   default["transparent"] = "50%"
+  default["source"] = 0
 
   return default
 
@@ -66,6 +67,7 @@ def parseConfig(configPath, window):
     except:
       if value.find("%") != -1: value = percToFloat(value)
       elif value[0] == "#": value = HexToRGB(value)
+      elif e.startswith("scale") : value = float(value)
       else: Exit("wrong " + e[:e.find(" = ")] + " config value")
     config[e[:e.find(" = ")]] = value
 
