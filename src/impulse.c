@@ -64,7 +64,7 @@ static void get_source_info_callback( pa_context *c, const pa_source_info *i, in
 	if ( is_last || device != NULL )
 		swept_through = 1;
 
-	printf("%d->%s\n",i->index, i->name);
+	printf("%d -> %s\n",i->index, i->name);
 
 	assert(i);
 
@@ -204,7 +204,7 @@ double *im_getSnapshot( int fft ) {
 
 void im_setup(int source) {
 	stream_index = source;
-	printf("Setup : %d\n", source);
+	printf("Setup: %d\n", source);
 }
 
 void im_start ( void ) {
