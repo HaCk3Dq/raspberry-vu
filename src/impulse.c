@@ -38,7 +38,8 @@ static pa_threaded_mainloop* mainloop = NULL;
 static pa_io_event* stdio_event = NULL;
 static pa_mainloop_api *mainloop_api = NULL;
 static char *stream_name = NULL, *client_name = NULL, *device = NULL;
-
+static int stream_index = 0;
+static int swept_through = 0;
 static pa_sample_spec sample_spec = {
 	.format = PA_SAMPLE_S16LE,
 	.rate = 44100,
@@ -58,15 +59,18 @@ static void quit( int ret ) {
 
 static void get_source_info_callback( pa_context *c, const pa_source_info *i, int is_last, void *userdata ) {
 
-	if ( is_last || device != NULL )
+	if(swept_through)
 		return;
+	if ( is_last || device != NULL )
+		swept_through = 1;
+
+	printf("%d->%s\n",i->index, i->name);
 
 	assert(i);
 
 	// snprintf(t, sizeof(t), "%u", i->monitor_of_sink);
 
-	if ( i->monitor_of_sink != PA_INVALID_INDEX ) {
-
+	if ( i->index == stream_index && i->monitor_of_sink != PA_INVALID_INDEX ) {
 		device = pa_xstrdup( i->name );
 
 		if ( ( pa_stream_connect_record( stream, device, NULL, flags ) ) < 0 ) {
@@ -198,6 +202,10 @@ double *im_getSnapshot( int fft ) {
 	return magnitude; // PyString_FromStringAndSize( (char *) snapshot, CHUNK );
 }
 
+void im_setup(int source) {
+	stream_index = source;
+	printf("Setup : %d\n", source);
+}
 
 void im_start ( void ) {
 
