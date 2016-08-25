@@ -204,7 +204,6 @@ double *im_getSnapshot( int fft ) {
 
 void im_setup(int source) {
 	stream_index = source;
-	printf("Setup: %d\n", source);
 }
 
 void im_start ( void ) {
