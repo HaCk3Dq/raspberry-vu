@@ -64,7 +64,8 @@ static void get_source_info_callback( pa_context *c, const pa_source_info *i, in
 	if ( is_last || device != NULL )
 		swept_through = 1;
 
-	printf("%d -> %s\n",i->index, i->name);
+    // This could be the target of a toggleable option : show usable outputs.
+	// printf("%d -> %s\n",i->index, i->name);
 
 	assert(i);
 
