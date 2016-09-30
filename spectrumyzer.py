@@ -110,8 +110,14 @@ class Widget(Gtk.Window):
     self.show_all()
 
 def updateWindow(window):
-  if impulse.getSnapshot(True)[0] == 0: return
-  window.queue_draw()
+  global idleDelay
+  if impulse.getSnapshot(True)[0] == 0:
+    if idleDelay == 10: idleDelay = 0
+    else:
+      idleDelay += 1
+      window.queue_draw()
+  else:
+    window.queue_draw()
   return True
 
 def delta(p, r):
@@ -140,6 +146,7 @@ if __name__ == "__main__":
   window = Widget()
   screenWidth = 0
   screenHeight = 0
+  idleDelay = 0
 
   if not os.path.isfile(configPath): createConfig(configPath)
   screenWidth, rgbaColor, transparent, source = parseConfig(configPath, window)
