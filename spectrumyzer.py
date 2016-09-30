@@ -112,12 +112,10 @@ class Widget(Gtk.Window):
 def updateWindow(window):
   global idleDelay
   if impulse.getSnapshot(True)[0] == 0:
-    if idleDelay == 10: idleDelay = 0
-    else:
-      idleDelay += 1
-      window.queue_draw()
-  else:
-    window.queue_draw()
+    if idleDelay == 10: return True
+    else: idleDelay += 1
+  else: idleDelay = 0
+  window.queue_draw()
   return True
 
 def delta(p, r):
