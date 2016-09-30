@@ -110,6 +110,7 @@ class Widget(Gtk.Window):
     self.show_all()
 
 def updateWindow(window):
+  if impulse.getSnapshot(True)[0] == 0: return
   window.queue_draw()
   return True
 
