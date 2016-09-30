@@ -59,7 +59,6 @@ static PyObject * impulse_setup( PyObject *self, PyObject *args, PyObject *kwarg
 	static char *kwlist[] = {"source", NULL};
 
 	PyArg_ParseTupleAndKeywords( args, kwargs, "i", kwlist, &source );
-	printf("Read : %d\n", source);
 	im_setup(source);
 
 	return Py_BuildValue("");
