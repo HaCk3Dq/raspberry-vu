@@ -1,4 +1,4 @@
-pkgname=spectumyzer
+pkgname=spectrumyzer
 pkgver=1
 pkgrel=1
 pkgdesc="Spectrum analyzer rendered on a desktop"
@@ -24,7 +24,7 @@ build() {
 package() {
   cd "$srcdir/$_gitname"
   mkdir -p "${pkgdir}/usr/bin"
-  mkdir -p "${pkgdir}/usr/lib"
+  mkdir -p "${pkgdir}/usr/lib/python2.7"
   cp spectrumyzer.py "${pkgdir}/usr/bin/spectrumyzer"
-  cp impulse.so "${pkgdir}/usr/lib/impulse.so"
+  cp impulse.so "${pkgdir}/usr/lib/python2.7/impulse.so"
 }
