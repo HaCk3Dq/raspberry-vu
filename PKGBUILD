@@ -25,6 +25,8 @@ package() {
   cd "$srcdir/$_gitname"
   mkdir -p "${pkgdir}/usr/bin"
   mkdir -p "${pkgdir}/usr/lib/python2.7"
+  mkdir -p "${pkgdir}/usr/share/applications"
   cp spectrumyzer.py "${pkgdir}/usr/bin/spectrumyzer"
   cp impulse.so "${pkgdir}/usr/lib/python2.7/impulse.so"
+  cp spectrumyzer.desktop "${pkgdir}/usr/share/applications/spectrumyzer.desktop"
 }
