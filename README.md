@@ -13,6 +13,7 @@ Make sure you have `git` and the full `gcc` stack installed, and then install th
 python2
 cairo
 python2-cairo
+python2-gobject
 fftw
 libpulse
 ```
