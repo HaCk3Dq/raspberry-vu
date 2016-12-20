@@ -16,6 +16,11 @@ md5sums=('SKIP')
 
 _gitname=spectrumyzer
 
+pkgver() {
+  cd "$srcdir/$_gitname"
+  printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
 build() {
   cd "$srcdir/$_gitname"
   make
