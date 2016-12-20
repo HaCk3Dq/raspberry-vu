@@ -1,0 +1,11 @@
+[Desktop Entry]
+
+Type=Application
+
+Version=1.0
+Name=Spectrumyzer
+Comment="Spectrum analyzer rendered on a desktop"
+Categories=Utility
+
+Exec=spectrumyzer
+Terminal=false
