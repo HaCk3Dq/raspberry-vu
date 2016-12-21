@@ -19,7 +19,6 @@ def getDefaultConfig():
   resolution   = subprocess.check_output("xrandr|grep '*'", shell=True).split("   ")[1].split("x")
   screenWidth  = resolution[0]
   screenHeight = int(resolution[1])
-
   offset = "4" if screenWidth == "1366" else "0"
 
   default["width"] = screenWidth
@@ -44,15 +43,10 @@ def createConfig(configPath):
   screenHeight = int(resolution[1])
 
   f = open(configPath,"w")
-
   default = getDefaultConfig()
-  config = ""
-
-  for e in default:
-    config += str(e) + " = " + str(default[e]) + "\n"
-
+  config  = ""
+  for e in default: config += str(e) + " = " + str(default[e]) + "\n"
   f.write(config)
-
   f.close()
 
 def parseConfig(configPath, window):
@@ -82,9 +76,8 @@ def HexToRGB(value):
     byteValues = tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
     return (round(byteValues[0]*(1/255.0),3),
             round(byteValues[1]*(1/255.0),3),
-            round(byteValues[2]*(1/255.0),3),)
-  except:
-    Exit("wrong hex color")
+            round(byteValues[2]*(1/255.0),3))
+  except: Exit("wrong hex color")
 
 def percToFloat(value):
   value = value.rstrip("%")
