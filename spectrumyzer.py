@@ -132,7 +132,7 @@ def drawFreq(widget, cr):
   biggerBarsNumber = barsWidth % barsNumber
   leftOffset = 0
 
-  if config["mulcticolor"] == "simple":
+  if config["multicolor"] == "simple":
       for i, freq in enumerate(prev):
         currentWidth = baseBarWidth + int(biggerBarsNumber > i)
         cr.set_source_rgba(rgbaColor_low[0], rgbaColor_low[1], rgbaColor_low[2], transparent)
