@@ -62,7 +62,7 @@ def parseConfig(configPath, window):
 
   window.set_size_request(config["width"], config["height"])
   window.move(config["xOffset"], config["yOffset"])
-  return config["width"], config["color"], config["transparent"], config["source"]
+  return config["width"], config["color"], config["color_low"], config["color_mid"], config["transparent"], config["source"]
 
 def HexToRGB(value):
   value = value.lstrip("#")
@@ -111,7 +111,6 @@ def delta(p, r):
 
 def drawFreq(widget, cr):
   global prev, screenWidth
-  cr.set_source_rgba(rgbaColor[0], rgbaColor[1], rgbaColor[2], transparent)
   audio_sample = impulse.getSnapshot(True)[:128]
 
   raw = map(lambda a, b: (a+b)/2, audio_sample[::2], audio_sample[1::2])
@@ -128,9 +127,23 @@ def drawFreq(widget, cr):
 
   for i, freq in enumerate(prev):
     currentWidth = baseBarWidth + int(biggerBarsNumber > i)
-    cr.rectangle(leftOffset, config["height"], currentWidth, freq)
+
+    cr.set_source_rgba(rgbaColor_low[0], rgbaColor_low[1], rgbaColor_low[2], transparent)
+    low_freq = config["height_low"]*freq
+    cr.rectangle(leftOffset, config["height"], currentWidth, low_freq)
+    cr.fill()
+
+    cr.set_source_rgba(rgbaColor_mid[0], rgbaColor_mid[1], rgbaColor_mid[2], transparent)
+    mid_freq = (config["height_mid"]-config["height_low"])*freq
+    cr.rectangle(leftOffset, config["height"]+low_freq, currentWidth, mid_freq)
+    cr.fill()
+
+    cr.set_source_rgba(rgbaColor[0], rgbaColor[1], rgbaColor[2], transparent)
+    hight_freq = (1-config["height_mid"])*freq
+    cr.rectangle(leftOffset, config["height"]+mid_freq+low_freq, currentWidth, hight_freq)
+    cr.fill()
+
     leftOffset += currentWidth + padding
-  cr.fill()
 
 # ===== main =====
 
@@ -144,7 +157,7 @@ if __name__ == "__main__":
   idleDelay = 0
 
   if not os.path.isfile(configPath): createConfig(configPath)
-  screenWidth, rgbaColor, transparent, source = parseConfig(configPath, window)
+  screenWidth, rgbaColor, rgbaColor_low, rgbaColor_mid, transparent, source = parseConfig(configPath, window)
   impulse.setup(source)
   impulse.start()
 
