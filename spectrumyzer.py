@@ -157,7 +157,7 @@ def drawFreq(widget, cr):
         cr.rectangle(leftOffset, config["height"], currentWidth, freq)
         cr.fill()
         leftOffset += currentWidth + padding
-  else: Exit("not valid mulcticolor option; Valid options are \"simple\", \"flat\" and \"off\"")
+  else: Exit("not valid multicolor option; Valid options are \"simple\", \"flat\" and \"off\"")
 
 # ===== main =====
 
