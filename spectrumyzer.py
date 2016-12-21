@@ -148,9 +148,9 @@ def drawFreq(widget, cr):
         cr.rectangle(leftOffset, config["height"]+mid_freq+low_freq, currentWidth, hight_freq)
         cr.fill()
         leftOffset += currentWidth + padding
-  elif config["mulcticolor"] == "flat":
+  elif config["multicolor"] == "flat":
       Exit("flat option is not implimented yet")
-  elif config["mulcticolor"] == "off":
+  elif config["multicolor"] == "off":
       for i, freq in enumerate(prev):
         currentWidth = baseBarWidth + int(biggerBarsNumber > i)
         cr.set_source_rgba(rgbaColor[0], rgbaColor[1], rgbaColor[2], transparent)
