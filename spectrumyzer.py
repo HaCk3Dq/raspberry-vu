@@ -24,8 +24,13 @@ def getDefaultConfig():
   default['xOffset'] = workarea.x
   default['yOffset'] = workarea.y + (workarea.height - default['height'])
 
+  default["height_mid"] = "70%"
+  default["height_low"] = "35%"
+
   default["scale"] = 1
   default["color"] = "#ffffff"
+  default["color_mid"] = "#dddddd"
+  default["color_low"] = "#bbbbbb"
   default["transparent"] = "50%"
   default["source"] = 0
 
