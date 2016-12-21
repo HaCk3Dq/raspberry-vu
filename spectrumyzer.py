@@ -16,15 +16,14 @@ def Exit(text):
 
 def getDefaultConfig():
   default = {}
-  resolution   = subprocess.check_output("xrandr|grep '*'", shell=True).split("   ")[1].split("x")
-  screenWidth  = resolution[0]
-  screenHeight = int(resolution[1])
-  offset = "4" if screenWidth == "1366" else "0"
+  display = Gdk.Display.get_default()
+  monitor = display.get_primary_monitor() or display.get_monitor(0)
+  workarea = monitor.get_workarea()
+  default['width'] = workarea.width
+  default['height'] = workarea.height / 2
+  default['xOffset'] = workarea.x
+  default['yOffset'] = workarea.y + (workarea.height - default['height'])
 
-  default["width"] = screenWidth
-  default["height"] = screenHeight/2
-  default["xOffset"] = offset
-  default["yOffset"] = screenHeight/2
   default["scale"] = 1
   default["color"] = "#ffffff"
   default["transparent"] = "50%"
@@ -38,10 +37,6 @@ def createConfig(configPath):
   print "It seems you have started Spectrumyzer for the first time.\nI have generated configuration file for you at the " +\
     boldGreen + configPath + resetAttr
 
-  resolution   = subprocess.check_output("xrandr|grep '*'", shell=True).split("   ")[1].split("x")
-  screenWidth  = resolution[0]
-  screenHeight = int(resolution[1])
-
   f = open(configPath,"w")
   default = getDefaultConfig()
   config  = ""
@@ -54,7 +49,7 @@ def parseConfig(configPath, window):
   try:
     with open(configPath) as f: conf = f.readlines()
   except: Exit("cannot open config file")
-  
+
   for e in conf:
     value = e[e.find("=")+2:].rstrip("\n")
     try: value = int(value)
@@ -115,7 +110,7 @@ def delta(p, r):
   return p+((r-p)/1.3)
 
 def drawFreq(widget, cr):
-  global prev, screenWidth, barWidth, padding
+  global prev, screenWidth
   cr.set_source_rgba(rgbaColor[0], rgbaColor[1], rgbaColor[2], transparent)
   audio_sample = impulse.getSnapshot(True)[:128]
 
@@ -124,8 +119,17 @@ def drawFreq(widget, cr):
   if prev == []: prev = raw
   prev = map(lambda p, r: delta(p, r), prev, raw)
 
+  padding = 5
+  barsNumber = len(prev)
+  barsWidth = screenWidth - padding * (barsNumber - 1)
+  baseBarWidth = barsWidth / barsNumber
+  biggerBarsNumber = barsWidth % barsNumber
+  leftOffset = 0
+
   for i, freq in enumerate(prev):
-    cr.rectangle(padding*i, config["height"], barWidth, freq)
+    currentWidth = baseBarWidth + int(biggerBarsNumber > i)
+    cr.rectangle(leftOffset, config["height"], currentWidth, freq)
+    leftOffset += currentWidth + padding
   cr.fill()
 
 # ===== main =====
@@ -143,8 +147,6 @@ if __name__ == "__main__":
   screenWidth, rgbaColor, transparent, source = parseConfig(configPath, window)
   impulse.setup(source)
   impulse.start()
-  barWidth = math.ceil((screenWidth-320)/64.0)
-  padding = barWidth + 5
 
   signal.signal(signal.SIGINT, signal.SIG_DFL) # make ^C work
   GLib.timeout_add(40, updateWindow, window)
