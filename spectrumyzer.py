@@ -11,7 +11,7 @@ def Exit(text):
   boldRed   = "\033[31m\x1b[1m"
   boldWhite = "\033[39m\x1b[1m"
   resetAttr = "\x1b[0m"
-  print boldRed + "Error: " + boldWhite + text + resetAttr
+  print (boldRed + "Error: " + boldWhite + text + resetAttr)
   exit()
 
 def getDefaultConfig():
@@ -34,8 +34,8 @@ def getDefaultConfig():
 def createConfig(configPath):
   boldGreen   = "\033[32m\x1b[1m"
   resetAttr = "\x1b[0m"
-  print "It seems you have started Spectrumyzer for the first time.\nI have generated configuration file for you at the " +\
-    boldGreen + configPath + resetAttr
+  print ("It seems you have started Spectrumyzer for the first time.\nI have generated configuration file for you at the " +\
+    boldGreen + configPath + resetAttr)
 
   f = open(configPath,"w")
   default = getDefaultConfig()
