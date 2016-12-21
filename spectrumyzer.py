@@ -33,6 +33,7 @@ def getDefaultConfig():
   default["color_low"] = "#bbbbbb"
   default["transparent"] = "50%"
   default["source"] = 0
+  default["multicolor"] = "off"
 
   return default
 
@@ -62,6 +63,7 @@ def parseConfig(configPath, window):
       if value.find("%") != -1: value = percToFloat(value)
       elif value[0] == "#": value = HexToRGB(value)
       elif e.startswith("scale") : value = float(value)
+      elif e.startswith("multicolor") : value = str(value)
       else: Exit("wrong " + e[:e.find(" = ")] + " config value")
     config[e[:e.find(" = ")]] = value
 
@@ -130,25 +132,32 @@ def drawFreq(widget, cr):
   biggerBarsNumber = barsWidth % barsNumber
   leftOffset = 0
 
-  for i, freq in enumerate(prev):
-    currentWidth = baseBarWidth + int(biggerBarsNumber > i)
-
-    cr.set_source_rgba(rgbaColor_low[0], rgbaColor_low[1], rgbaColor_low[2], transparent)
-    low_freq = config["height_low"]*freq
-    cr.rectangle(leftOffset, config["height"], currentWidth, low_freq)
-    cr.fill()
-
-    cr.set_source_rgba(rgbaColor_mid[0], rgbaColor_mid[1], rgbaColor_mid[2], transparent)
-    mid_freq = (config["height_mid"]-config["height_low"])*freq
-    cr.rectangle(leftOffset, config["height"]+low_freq, currentWidth, mid_freq)
-    cr.fill()
-
-    cr.set_source_rgba(rgbaColor[0], rgbaColor[1], rgbaColor[2], transparent)
-    hight_freq = (1-config["height_mid"])*freq
-    cr.rectangle(leftOffset, config["height"]+mid_freq+low_freq, currentWidth, hight_freq)
-    cr.fill()
-
-    leftOffset += currentWidth + padding
+  if config["mulcticolor"] == "simple":
+      for i, freq in enumerate(prev):
+        currentWidth = baseBarWidth + int(biggerBarsNumber > i)
+        cr.set_source_rgba(rgbaColor_low[0], rgbaColor_low[1], rgbaColor_low[2], transparent)
+        low_freq = config["height_low"]*freq
+        cr.rectangle(leftOffset, config["height"], currentWidth, low_freq)
+        cr.fill()
+        cr.set_source_rgba(rgbaColor_mid[0], rgbaColor_mid[1], rgbaColor_mid[2], transparent)
+        mid_freq = (config["height_mid"]-config["height_low"])*freq
+        cr.rectangle(leftOffset, config["height"]+low_freq, currentWidth, mid_freq)
+        cr.fill()
+        cr.set_source_rgba(rgbaColor[0], rgbaColor[1], rgbaColor[2], transparent)
+        hight_freq = (1-config["height_mid"])*freq
+        cr.rectangle(leftOffset, config["height"]+mid_freq+low_freq, currentWidth, hight_freq)
+        cr.fill()
+        leftOffset += currentWidth + padding
+  elif config["mulcticolor"] == "flat":
+      Exit("flat option is not implimented yet")
+  elif config["mulcticolor"] == "off":
+      for i, freq in enumerate(prev):
+        currentWidth = baseBarWidth + int(biggerBarsNumber > i)
+        cr.set_source_rgba(rgbaColor[0], rgbaColor[1], rgbaColor[2], transparent)
+        cr.rectangle(leftOffset, config["height"], currentWidth, freq)
+        cr.fill()
+        leftOffset += currentWidth + padding
+  else: Exit("not valid mulcticolor option; Valid options are \"simple\", \"flat\" and \"off\"")
 
 # ===== main =====
 
