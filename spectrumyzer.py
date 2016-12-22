@@ -149,7 +149,32 @@ def drawFreq(widget, cr):
         cr.fill()
         leftOffset += currentWidth + padding
   elif config["multicolor"] == "flat":
-      Exit("flat option is not implimented yet")
+      for i, freq in enumerate(prev):
+        bar_low = config["height"]*config["height_low"]
+        bar_mid = config["height"]*(config["height_mid"]-config["height_low"])
+        currentWidth = baseBarWidth + int(biggerBarsNumber > i)
+        if -freq <= bar_low:
+          cr.set_source_rgba(rgbaColor_low[0], rgbaColor_low[1], rgbaColor_low[2], transparent)
+          cr.rectangle(leftOffset, config["height"], currentWidth, freq)
+          cr.fill()
+        elif -freq <= bar_mid+bar_low:
+          cr.set_source_rgba(rgbaColor_low[0], rgbaColor_low[1], rgbaColor_low[2], transparent)
+          cr.rectangle(leftOffset, config["height"], currentWidth, -bar_low)
+          cr.fill()
+          cr.set_source_rgba(rgbaColor_mid[0], rgbaColor_mid[1], rgbaColor_mid[2], transparent)
+          cr.rectangle(leftOffset, config["height"]-bar_low, currentWidth, freq+bar_low)
+          cr.fill()
+        else:
+          cr.set_source_rgba(rgbaColor_low[0], rgbaColor_low[1], rgbaColor_low[2], transparent)
+          cr.rectangle(leftOffset, config["height"], currentWidth, -bar_low)
+          cr.fill()
+          cr.set_source_rgba(rgbaColor_mid[0], rgbaColor_mid[1], rgbaColor_mid[2], transparent)
+          cr.rectangle(leftOffset, config["height"]-bar_low, currentWidth, -bar_mid)
+          cr.fill()
+          cr.set_source_rgba(rgbaColor[0], rgbaColor[1], rgbaColor[2], transparent)
+          cr.rectangle(leftOffset, config["height"]-bar_low-bar_mid, currentWidth, freq+bar_low+bar_mid)
+          cr.fill()
+        leftOffset += currentWidth + padding
   elif config["multicolor"] == "off":
       for i, freq in enumerate(prev):
         currentWidth = baseBarWidth + int(biggerBarsNumber > i)
