@@ -120,7 +120,7 @@ def delta(p, r):
 
 def drawFreq(widget, cr):
   global prev, screenWidth
-  audio_sample = impulse.getSnapshot(True)[:config["barsNumber"]*2]
+  audio_sample = impulse.getSnapshot(True)[:barsNumber*2]
 
   raw = map(lambda a, b: (a+b)/2, audio_sample[::2], audio_sample[1::2])
   raw = map(lambda y: round(-config["height"]*config["scale"]*y), raw)
