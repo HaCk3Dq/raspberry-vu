@@ -128,7 +128,7 @@ def drawFreq(widget, cr):
   prev = map(lambda p, r: delta(p, r), prev, raw)
 
   padding = 5
-  barsWidth = screenWidth - padding * (barsNumber - 1)
+  barsWidth = screenWidth - padding * (config["barsNumber"] - 1)
   baseBarWidth = barsWidth / barsNumber
   biggerBarsNumber = barsWidth % barsNumber
   leftOffset = 0
