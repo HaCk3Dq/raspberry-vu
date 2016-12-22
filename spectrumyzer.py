@@ -135,14 +135,17 @@ def drawFreq(widget, cr):
   if config["multicolor"] == "simple":
       for i, freq in enumerate(prev):
         currentWidth = baseBarWidth + int(biggerBarsNumber > i)
+        # Draw bottom part of bar
         cr.set_source_rgba(rgbaColor_low[0], rgbaColor_low[1], rgbaColor_low[2], transparent)
         low_freq = config["height_low"]*freq
         cr.rectangle(leftOffset, config["height"], currentWidth, low_freq)
         cr.fill()
+        # Draw middle part of bar
         cr.set_source_rgba(rgbaColor_mid[0], rgbaColor_mid[1], rgbaColor_mid[2], transparent)
         mid_freq = (config["height_mid"]-config["height_low"])*freq
         cr.rectangle(leftOffset, config["height"]+low_freq, currentWidth, mid_freq)
         cr.fill()
+        # Draw top part of bar
         cr.set_source_rgba(rgbaColor[0], rgbaColor[1], rgbaColor[2], transparent)
         hight_freq = (1-config["height_mid"])*freq
         cr.rectangle(leftOffset, config["height"]+mid_freq+low_freq, currentWidth, hight_freq)
@@ -150,21 +153,21 @@ def drawFreq(widget, cr):
         leftOffset += currentWidth + padding
   elif config["multicolor"] == "flat":
       for i, freq in enumerate(prev):
-        bar_low = config["height"]*config["height_low"]
-        bar_mid = config["height"]*(config["height_mid"]-config["height_low"])
+        bar_low = config["height"]*config["height_low"] # Height of 'color_low' part of bar
+        bar_mid = config["height"]*(config["height_mid"]-config["height_low"]) # Height of 'color_mid' part of bar
         currentWidth = baseBarWidth + int(biggerBarsNumber > i)
-        if -freq <= bar_low:
+        if -freq <= bar_low: # Draw bar if 'freq' lower than height of 'color_low' part of bar
           cr.set_source_rgba(rgbaColor_low[0], rgbaColor_low[1], rgbaColor_low[2], transparent)
           cr.rectangle(leftOffset, config["height"], currentWidth, freq)
           cr.fill()
-        elif -freq <= bar_mid+bar_low:
+        elif -freq <= bar_mid+bar_low: # If 'freq' is highter than height of 'color_low' but lower than 'color_mid' than draw full 'bar_low' and 'freq' on top of it
           cr.set_source_rgba(rgbaColor_low[0], rgbaColor_low[1], rgbaColor_low[2], transparent)
           cr.rectangle(leftOffset, config["height"], currentWidth, -bar_low)
           cr.fill()
           cr.set_source_rgba(rgbaColor_mid[0], rgbaColor_mid[1], rgbaColor_mid[2], transparent)
           cr.rectangle(leftOffset, config["height"]-bar_low, currentWidth, freq+bar_low)
           cr.fill()
-        else:
+        else: # Everything same here: two full bars and 'freq' on top of them
           cr.set_source_rgba(rgbaColor_low[0], rgbaColor_low[1], rgbaColor_low[2], transparent)
           cr.rectangle(leftOffset, config["height"], currentWidth, -bar_low)
           cr.fill()
@@ -175,7 +178,7 @@ def drawFreq(widget, cr):
           cr.rectangle(leftOffset, config["height"]-bar_low-bar_mid, currentWidth, freq+bar_low+bar_mid)
           cr.fill()
         leftOffset += currentWidth + padding
-  elif config["multicolor"] == "off":
+  elif config["multicolor"] == "off": # Old method, nothing new
       for i, freq in enumerate(prev):
         currentWidth = baseBarWidth + int(biggerBarsNumber > i)
         cr.set_source_rgba(rgbaColor[0], rgbaColor[1], rgbaColor[2], transparent)
