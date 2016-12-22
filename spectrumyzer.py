@@ -1,158 +1,102 @@
 #!/usr/bin/python3
+# -*- Mode: Python; indent-tabs-mode: t; python-indent: 4; tab-width: 4 -*-
 
-import sys, signal, os, curses, time, impulse, math, subprocess
+# import os
+# import sys
+import impulse
+import signal
+
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib
 
-# ===== Utils =====
 
-def Exit(text):
-  boldRed   = "\033[31m\x1b[1m"
-  boldWhite = "\033[39m\x1b[1m"
-  resetAttr = "\x1b[0m"
-  print(boldRed + "Error: " + boldWhite + text + resetAttr)
-  exit()
+config = dict(
+	width = 1920,
+	height = 1080 / 2,
+	xOffset = 0,
+	yOffset = 540,
+	source = 0,
+	scale = 1,
+	rgba = Gdk.RGBA(1, 0.5, 0.5, 0.5)
+)
 
-def getDefaultConfig():
-  default = {}
-  display = Gdk.Display.get_default()
-  screen = display.get_default_screen()
-  # Fix this: 'get_monitor' methods since Gtk 3.22 only
-  # monitor = display.get_primary_monitor() or display.get_monitor(0)
-  # monitor = display.get_monitor(0)
-  workarea = screen.get_monitor_workarea(0)
-  default['width'] = workarea.width
-  default['height'] = workarea.height / 2
-  default['xOffset'] = workarea.x
-  default['yOffset'] = workarea.y + (workarea.height - default['height'])
 
-  default["scale"] = 1
-  default["color"] = "#ffffff"
-  default["transparent"] = "50%"
-  default["source"] = 0
+class SilenceChecker:
+	def __init__(self, value=0):
+		self.value = value
 
-  return default
+	def __call__(self, value):
+		self.value = 0 if value > 0 else self.value + 1
+		return self.value > 10
 
-def createConfig(configPath):
-  boldGreen   = "\033[32m\x1b[1m"
-  resetAttr = "\x1b[0m"
-  print ("It seems you have started Spectrumyzer for the first time.\nI have generated configuration file for you at the " +\
-    boldGreen + configPath + resetAttr)
 
-  f = open(configPath,"w")
-  default = getDefaultConfig()
-  config  = ""
-  for e in default: config += str(e) + " = " + str(default[e]) + "\n"
-  f.write(config)
-  f.close()
+class MainApp:
+	def __init__(self):
+		self.is_silence = SilenceChecker()
+		self.audio_sample = []
+		self.previous_sample = []  # this is formatted one so its len may be different from original
 
-def parseConfig(configPath, window):
-  global config
-  try:
-    with open(configPath) as f: conf = f.readlines()
-  except: Exit("cannot open config file")
+		# init window
+		# self.window = Gtk.Window(skip_pager_hint=True, skip_taskbar_hint=True)
+		# self.window.set_wmclass("sildesktopwidget","sildesktopwidget")
+		# self.window.set_type_hint(Gdk.WindowTypeHint.DESKTOP)
+		# self.window.set_keep_below(True)
+		self.window = Gtk.Window()
+		screen = self.window.get_screen()
 
-  for e in conf:
-    value = e[e.find("=")+2:].rstrip("\n")
-    try: value = int(value)
-    except:
-      if value.find("%") != -1: value = percToFloat(value)
-      elif value[0] == "#": value = HexToRGB(value)
-      elif e.startswith("scale") : value = float(value)
-      else: Exit("wrong " + e[:e.find(" = ")] + " config value")
-    config[e[:e.find(" = ")]] = value
+		# set window transparent
+		self.window.set_visual(screen.get_rgba_visual())
+		self.window.override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(0, 0, 0, 0))
 
-  window.set_size_request(config["width"], config["height"])
-  window.move(config["xOffset"], config["yOffset"])
-  return config["width"], config["color"], config["transparent"], config["source"]
+		# init drawing widget
+		self.draw_area = Gtk.DrawingArea()
+		self.draw_area.connect("draw", self.redraw)
+		self.window.add(self.draw_area)
 
-def HexToRGB(value):
-  value = value.lstrip("#")
-  lv = len(value)
-  try:
-    byteValues = tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
-    return (round(byteValues[0]*(1/255.0),3),
-            round(byteValues[1]*(1/255.0),3),
-            round(byteValues[2]*(1/255.0),3))
-  except: Exit("wrong hex color")
+		# semi constants for drawing
+		self.padding = 5
+		self.bars_number = 64
+		total_bars_width = config["width"] - self.padding * (self.bars_number - 1)
+		self.base_bar_width = int(total_bars_width / self.bars_number)
+		self.bar_step = (self.base_bar_width + self.padding)
+		self.left_offset = (total_bars_width - self.base_bar_width * self.bars_number) / 2
 
-def percToFloat(value):
-  value = value.rstrip("%")
-  try: value = int(value) * .01
-  except: Exit("wrong transparent format")
-  return value
+		# signals
+		GLib.timeout_add(40, self.update)
+		self.window.connect("delete-event", self.close)
 
-# ===== Render =====
+		# show window
+		self.window.show_all()
 
-class Widget(Gtk.Window):
-  def __init__(self):
-    Gtk.Window.__init__(self)
-    # Don't need it while code testing
-    # Gtk.Window.__init__(self, skip_pager_hint=True, skip_taskbar_hint=True)
-    # self.set_wmclass("sildesktopwidget","sildesktopwidget")
-    # self.set_type_hint(Gdk.WindowTypeHint.DESKTOP)
-    # self.set_keep_below(True)
-    screen = self.get_screen()
-    rgba = screen.get_rgba_visual()
-    self.set_visual(rgba)
-    self.override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(0,0,0,0))
-    self.drawArea = Gtk.DrawingArea()
-    self.drawArea.connect('draw', drawFreq)
-    self.add(self.drawArea)
-    self.show_all()
+	def update(self):
+		self.audio_sample = impulse.getSnapshot(True)[:128]
+		if not self.is_silence(self.audio_sample[0]):
+			self.draw_area.queue_draw()
+		return True
 
-def updateWindow(window):
-  global idleDelay
-  if impulse.getSnapshot(True)[0] == 0:
-    if idleDelay == 10: return True
-    else: idleDelay += 1
-  else: idleDelay = 0
-  window.queue_draw()
-  return True
+	def redraw(self, widget, cr):
+		cr.set_source_rgba(*config["rgba"])
 
-def delta(p, r):
-  return p+((r-p)/1.3)
+		raw = map(lambda a, b: (a + b) / 2, self.audio_sample[::2], self.audio_sample[1::2])
+		raw = list(map(lambda y: round(-config["height"] * config["scale"] * y), raw))
+		if self.previous_sample == []:
+			self.previous_sample = raw
+		self.previous_sample = list(map(lambda p, r: p + (r - p) / 1.3, self.previous_sample, raw))
 
-def drawFreq(widget, cr):
-  global prev, screenWidth
-  cr.set_source_rgba(rgbaColor[0], rgbaColor[1], rgbaColor[2], transparent)
-  audio_sample = impulse.getSnapshot(True)[:128]
+		for i, value in enumerate(self.previous_sample):
+			cr.rectangle(self.left_offset + i * self.bar_step, config["height"], self.base_bar_width, value)
+		cr.fill()
 
-  raw = map(lambda a, b: (a+b)/2, audio_sample[::2], audio_sample[1::2])
-  raw = list(map(lambda y: round(-config["height"]*config["scale"]*y), raw))
-  if prev == []: prev = raw
-  prev = list(map(lambda p, r: delta(p, r), prev, raw))
+	def close(self, *args):
+		Gtk.main_quit()
 
-  padding = 5
-  barsNumber = len(prev)
-  barsWidth = screenWidth - padding * (barsNumber - 1)
-  baseBarWidth = barsWidth / barsNumber
-  biggerBarsNumber = barsWidth % barsNumber
-  leftOffset = 0
-
-  for i, freq in enumerate(prev):
-    currentWidth = baseBarWidth + int(biggerBarsNumber > i)
-    cr.rectangle(leftOffset, config["height"], currentWidth, freq)
-    leftOffset += currentWidth + padding
-  cr.fill()
-
-# ===== main =====
 
 if __name__ == "__main__":
-  configPath = os.path.expanduser("~/.spectrum.conf")
-  config = getDefaultConfig()
-  prev = []
-  window = Widget()
-  screenWidth = 0
-  screenHeight = 0
-  idleDelay = 0
+	impulse.setup(config["source"])
+	impulse.start()
+	signal.signal(signal.SIGINT, signal.SIG_DFL)  # make ^C work
 
-  if not os.path.isfile(configPath): createConfig(configPath)
-  screenWidth, rgbaColor, transparent, source = parseConfig(configPath, window)
-  impulse.setup(source)
-  impulse.start()
-
-  signal.signal(signal.SIGINT, signal.SIG_DFL) # make ^C work
-  GLib.timeout_add(40, updateWindow, window)
-  Gtk.main()
+	MainApp()
+	Gtk.main()
+	exit()
