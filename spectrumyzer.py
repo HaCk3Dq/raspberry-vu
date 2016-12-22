@@ -27,6 +27,8 @@ def getDefaultConfig():
   default["height_mid"] = "70%"
   default["height_low"] = "35%"
 
+  default["barsNumber"] = 64
+
   default["scale"] = 1
   default["color"] = "#ffffff"
   default["color_mid"] = "#dddddd"
@@ -118,7 +120,7 @@ def delta(p, r):
 
 def drawFreq(widget, cr):
   global prev, screenWidth
-  audio_sample = impulse.getSnapshot(True)[:128]
+  audio_sample = impulse.getSnapshot(True)[:config["barsNumber"]*2]
 
   raw = map(lambda a, b: (a+b)/2, audio_sample[::2], audio_sample[1::2])
   raw = map(lambda y: round(-config["height"]*config["scale"]*y), raw)
@@ -126,7 +128,6 @@ def drawFreq(widget, cr):
   prev = map(lambda p, r: delta(p, r), prev, raw)
 
   padding = 5
-  barsNumber = len(prev)
   barsWidth = screenWidth - padding * (barsNumber - 1)
   baseBarWidth = barsWidth / barsNumber
   biggerBarsNumber = barsWidth % barsNumber
