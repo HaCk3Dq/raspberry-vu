@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import sys, signal, os, curses, time, impulse, math, subprocess
 import gi
@@ -11,14 +11,17 @@ def Exit(text):
   boldRed   = "\033[31m\x1b[1m"
   boldWhite = "\033[39m\x1b[1m"
   resetAttr = "\x1b[0m"
-  print boldRed + "Error: " + boldWhite + text + resetAttr
+  print(boldRed + "Error: " + boldWhite + text + resetAttr)
   exit()
 
 def getDefaultConfig():
   default = {}
   display = Gdk.Display.get_default()
-  monitor = display.get_primary_monitor() or display.get_monitor(0)
-  workarea = monitor.get_workarea()
+  screen = display.get_default_screen()
+  # Fix this: 'get_monitor' methods since Gtk 3.22 only
+  # monitor = display.get_primary_monitor() or display.get_monitor(0)
+  # monitor = display.get_monitor(0)
+  workarea = screen.get_monitor_workarea(0)
   default['width'] = workarea.width
   default['height'] = workarea.height / 2
   default['xOffset'] = workarea.x
@@ -34,8 +37,8 @@ def getDefaultConfig():
 def createConfig(configPath):
   boldGreen   = "\033[32m\x1b[1m"
   resetAttr = "\x1b[0m"
-  print "It seems you have started Spectrumyzer for the first time.\nI have generated configuration file for you at the " +\
-    boldGreen + configPath + resetAttr
+  print ("It seems you have started Spectrumyzer for the first time.\nI have generated configuration file for you at the " +\
+    boldGreen + configPath + resetAttr)
 
   f = open(configPath,"w")
   default = getDefaultConfig()
@@ -84,10 +87,12 @@ def percToFloat(value):
 
 class Widget(Gtk.Window):
   def __init__(self):
-    Gtk.Window.__init__(self, skip_pager_hint=True, skip_taskbar_hint=True)
-    self.set_wmclass("sildesktopwidget","sildesktopwidget")
-    self.set_type_hint(Gdk.WindowTypeHint.DESKTOP)
-    self.set_keep_below(True)
+    Gtk.Window.__init__(self)
+    # Don't need it while code testing
+    # Gtk.Window.__init__(self, skip_pager_hint=True, skip_taskbar_hint=True)
+    # self.set_wmclass("sildesktopwidget","sildesktopwidget")
+    # self.set_type_hint(Gdk.WindowTypeHint.DESKTOP)
+    # self.set_keep_below(True)
     screen = self.get_screen()
     rgba = screen.get_rgba_visual()
     self.set_visual(rgba)
@@ -115,9 +120,9 @@ def drawFreq(widget, cr):
   audio_sample = impulse.getSnapshot(True)[:128]
 
   raw = map(lambda a, b: (a+b)/2, audio_sample[::2], audio_sample[1::2])
-  raw = map(lambda y: round(-config["height"]*config["scale"]*y), raw)
+  raw = list(map(lambda y: round(-config["height"]*config["scale"]*y), raw))
   if prev == []: prev = raw
-  prev = map(lambda p, r: delta(p, r), prev, raw)
+  prev = list(map(lambda p, r: delta(p, r), prev, raw))
 
   padding = 5
   barsNumber = len(prev)
