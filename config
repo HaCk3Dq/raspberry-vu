@@ -1,0 +1,13 @@
+[Main]
+source = 0
+
+[Bars]
+padding = 5
+scale = 1
+rgba = #80808080
+
+[Offset]
+left = 5
+right = 5
+top = 5
+bottom = 5
