@@ -71,7 +71,7 @@ def parseConfig(configPath, window):
 
   window.set_size_request(config["width"], config["height"])
   window.move(config["xOffset"], config["yOffset"])
-  return config["width"], config["color"], config["color_low"], config["color_mid"], config["transparent"], config["source"]
+  return config["width"], config["barsNumber"], config["color"], config["color_low"], config["color_mid"], config["transparent"], config["source"]
 
 def HexToRGB(value):
   value = value.lstrip("#")
@@ -128,7 +128,7 @@ def drawFreq(widget, cr):
   prev = map(lambda p, r: delta(p, r), prev, raw)
 
   padding = 5
-  barsWidth = screenWidth - padding * (config["barsNumber"] - 1)
+  barsWidth = screenWidth - padding * (barsNumber - 1)
   baseBarWidth = barsWidth / barsNumber
   biggerBarsNumber = barsWidth % barsNumber
   leftOffset = 0
@@ -200,7 +200,7 @@ if __name__ == "__main__":
   idleDelay = 0
 
   if not os.path.isfile(configPath): createConfig(configPath)
-  screenWidth, rgbaColor, rgbaColor_low, rgbaColor_mid, transparent, source = parseConfig(configPath, window)
+  screenWidth, barsNumber, rgbaColor, rgbaColor_low, rgbaColor_mid, transparent, source = parseConfig(configPath, window)
   impulse.setup(source)
   impulse.start()
 
