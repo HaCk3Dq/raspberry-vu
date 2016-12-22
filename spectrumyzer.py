@@ -12,14 +12,23 @@ from gi.repository import Gtk, Gdk, GLib
 
 
 config = dict(
-	width = 1920,
-	height = 1080 / 2,
-	xOffset = 0,
-	yOffset = 540,
+	left_offset = 10,
+	right_offset = 10,
+	top_offset = 5,
+	bottom_offset = 5,
+	padding = 5,
 	source = 0,
 	scale = 1,
 	rgba = Gdk.RGBA(1, 0.5, 0.5, 0.5)
 )
+
+
+class AttributeDict(dict):
+	def __getattr__(self, attr):
+		return self[attr]
+
+	def __setattr__(self, attr, value):
+		self[attr] = value
 
 
 class SilenceChecker:
@@ -55,19 +64,26 @@ class MainApp:
 		self.window.add(self.draw_area)
 
 		# semi constants for drawing
-		self.padding = 5
-		self.bars_number = 64
-		total_bars_width = config["width"] - self.padding * (self.bars_number - 1)
-		self.base_bar_width = int(total_bars_width / self.bars_number)
-		self.bar_step = (self.base_bar_width + self.padding)
-		self.left_offset = (total_bars_width - self.base_bar_width * self.bars_number) / 2
+		self.bars = AttributeDict()
+		self.bars.padding = config["padding"]
+		self.bars.number = 64
 
 		# signals
-		GLib.timeout_add(40, self.update)
+		GLib.timeout_add(33, self.update)
 		self.window.connect("delete-event", self.close)
+		self.window.connect("check-resize", self.on_resize)
 
 		# show window
 		self.window.show_all()
+
+	def on_resize(self, *args):
+		self.bars.win_width = self.draw_area.get_allocated_width() - config["right_offset"]
+		self.bars.win_height = self.draw_area.get_allocated_height() - config["bottom_offset"]
+
+		total_width = (self.bars.win_width - config["left_offset"]) - self.bars.padding * (self.bars.number - 1)
+		self.bars.width = max(int(total_width / self.bars.number), 1)
+		self.bars.height = self.bars.win_height - config["top_offset"]
+		self.bars.mark = total_width % self.bars.number  # width correnction point
 
 	def update(self):
 		self.audio_sample = impulse.getSnapshot(True)[:128]
@@ -78,14 +94,17 @@ class MainApp:
 	def redraw(self, widget, cr):
 		cr.set_source_rgba(*config["rgba"])
 
-		raw = map(lambda a, b: (a + b) / 2, self.audio_sample[::2], self.audio_sample[1::2])
-		raw = list(map(lambda y: round(-config["height"] * config["scale"] * y), raw))
+		raw = list(map(lambda a, b: (a + b) / 2, self.audio_sample[::2], self.audio_sample[1::2]))
 		if self.previous_sample == []:
 			self.previous_sample = raw
 		self.previous_sample = list(map(lambda p, r: p + (r - p) / 1.3, self.previous_sample, raw))
 
+		dx = config["left_offset"]
 		for i, value in enumerate(self.previous_sample):
-			cr.rectangle(self.left_offset + i * self.bar_step, config["height"], self.base_bar_width, value)
+			width = self.bars.width + int(i < self.bars.mark)
+			height = self.bars.height * min(config["scale"] * value, 1)
+			cr.rectangle(dx, self.bars.win_height, width, - height)
+			dx += width + self.bars.padding
 		cr.fill()
 
 	def close(self, *args):
