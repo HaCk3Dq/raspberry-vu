@@ -69,22 +69,29 @@ static PyObject *ImpulseError;
 static PyMethodDef ImpulseMethods[ ] = {
 	{ "getSnapshot",  (PyCFunction)impulse_getSnapshot, METH_VARARGS | METH_KEYWORDS, "Returns the current audio snapshot from Pulseaudio." },
 	{ "setup",  (PyCFunction)impulse_setup, METH_VARARGS | METH_KEYWORDS, "Setup stuff." },
-	{ "start",  (PyCFunction)impulse_start, 0, "Start the system." },
-	{ NULL, NULL, 0, NULL }		/* Sentinel */
+	{ "start",  (PyCFunction)impulse_start, METH_NOARGS, "Start the system." },
+	{ NULL, NULL, 0, NULL } /* Sentinel */
 };
 
-PyMODINIT_FUNC initimpulse ( void ) {
+static struct PyModuleDef impulsemodule = {
+	PyModuleDef_HEAD_INIT,
+	"impulse", /* name of module */
+	"Pulseaudio spectrum analyzer", /* module documentation, may be NULL */
+	-1, /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
+	ImpulseMethods
+};
+
+PyMODINIT_FUNC PyInit_impulse ( void ) {
 	PyObject *m;
 
-	m = Py_InitModule( "impulse", ImpulseMethods );
+	m = PyModule_Create( &impulsemodule );
 	if (m == NULL)
-		return;
+		return NULL;
 
 	ImpulseError = PyErr_NewException( "impulse.error", NULL, NULL );
 	Py_INCREF( ImpulseError );
 	PyModule_AddObject( m, "error", ImpulseError );
 
 	Py_AtExit( &im_stop );
-	return;
+	return m;
 }
-
