@@ -25,7 +25,10 @@ class ConfigManager(dict):
 	"""Read some program setting from file"""
 	def __init__(self, configfile):
 		self.configfile = configfile
-		self.defconfig = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config")
+		if os.path.isfile("/usr/share/spectrumyzer/config"):
+			self.defconfig = "/usr/share/spectrumyzer/config"
+		else:
+			self.defconfig = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config")
 
 		if not os.path.isfile(configfile):
 			shutil.copyfile(self.defconfig, configfile)
@@ -97,6 +100,8 @@ class MainApp:
 				self.window.set_keep_below(True)
 				self.window.set_skip_taskbar_hint(True)
 				self.window.set_skip_pager_hint(True)
+			else:
+				print("Not valid desktop_mode value. Falling back to windowed mode")
 
 		# set window transparent
 		self.window.set_visual(screen.get_rgba_visual())
