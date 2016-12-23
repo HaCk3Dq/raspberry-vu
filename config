@@ -1,8 +1,8 @@
 [Main]
 source = 0
-desktop = 0
-desktop_mode = pseudo_desktop
-# Posible values are 'true_desktop' and 'pseudo_desktop'
+
+# valid options: normal, desktop, screensize, fullscreen, maximize, keep_below, skip_taskbar, skip_pager
+state = desktop, screensize
 
 [Bars]
 padding = 5

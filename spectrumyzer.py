@@ -23,7 +23,8 @@ class AttributeDict(dict):
 
 class ConfigManager(dict):
 	"""Read some program setting from file"""
-	def __init__(self, configfile):
+	def __init__(self, configfile, winstate_valid=[]):
+		self.winstate_valid = winstate_valid
 		self.configfile = configfile
 		if os.path.isfile("/usr/share/spectrumyzer/config"):
 			self.defconfig = "/usr/share/spectrumyzer/config"
@@ -53,8 +54,6 @@ class ConfigManager(dict):
 
 	def read_spec_data(self):
 		self["source"] = self.parser.getint("Main", "source")
-		self["desktop"] = self.parser.getboolean("Main", "desktop")
-		self["desktop_mode"] = self.parser.get("Main", "desktop_mode")
 		self["padding"] = self.parser.getint("Bars", "padding")
 		self["scale"] = self.parser.getfloat("Bars", "scale")
 
@@ -66,6 +65,35 @@ class ConfigManager(dict):
 		nums = [int(hex_[i:i + 2], 16) / 255.0 for i in range(0, 7, 2)]
 		self["rgba"] = Gdk.RGBA(*nums)
 
+		# window state
+		self["state"] = [word.strip() for word in self.parser.get("Main", "state").split(",")]
+		if not all(state in self.winstate_valid for state in self["state"]):
+			raise Exception("Wrong window settings")
+
+
+class WindowState:
+	"""Window properties manager"""
+	valid = ("normal", "desktop", "screensize", "fullscreen", "maximize", "keep_below", "skip_taskbar", "skip_pager")
+
+	def __init__(self, window, screen_size):
+		self.window = window
+
+		self.actions = dict(
+			normal = lambda: None,
+			desktop = lambda: self.window.set_type_hint(Gdk.WindowTypeHint.DESKTOP),
+			screensize = lambda: self.window.set_default_size(*screen_size),
+			fullscreen = lambda: self.window.fullscreen(),
+			maximize = lambda: self.window.maximize(),
+			keep_below = lambda: self.window.set_keep_below(True),
+			skip_taskbar = lambda: self.window.set_skip_taskbar_hint(True),
+			skip_pager = lambda: self.window.set_skip_pager_hint(True),
+		)
+
+	def setup(self, *settings):
+		"""Set wondow properties"""
+		for state in settings:
+			self.actions[state]()
+
 
 class MainApp:
 	"""Main application class"""
@@ -74,34 +102,21 @@ class MainApp:
 		self.audio_sample = []
 		self.previous_sample = []  # this is formatted one so its len may be different from original
 
+		# init window
+		self.window = Gtk.Window()
+		screen = self.window.get_screen()
+		self.winstate = WindowState(self.window, [screen.get_width(), screen.get_height()])
+
 		# load config
 		self.configfile = os.path.expanduser("~/.config/spectrum.conf")
-		self.config = ConfigManager(self.configfile)
+		self.config = ConfigManager(self.configfile, self.winstate.valid)
 
 		# start spectrum analyzer
 		impulse.setup(self.config["source"])
 		impulse.start()
 
-		# init window
-		self.window = Gtk.Window()
-		screen = self.window.get_screen()
-		if self.config["desktop"]:
-			if self.config["desktop_mode"] == "true_desktop":
-			# this section strongly depends on the system window manager
-			# current setting is suitable for awesome WM v3.5.9
-
-			# true desktop
-				self.window.set_type_hint(Gdk.WindowTypeHint.DESKTOP)
-				self.window.set_default_size(screen.get_width(),screen.get_height())
-			# self.window.fullscreen()
-			elif self.config["desktop_mode"] == "pseudo_desktop":
-			# pseudo desktop (doesn't overlap awesome desktop wiboxes but steal focus)
-				self.window.maximize()
-				self.window.set_keep_below(True)
-				self.window.set_skip_taskbar_hint(True)
-				self.window.set_skip_pager_hint(True)
-			else:
-				print("Not valid desktop_mode value. Falling back to windowed mode")
+		# set window state according config settings
+		self.winstate.setup(*self.config["state"])
 
 		# set window transparent
 		self.window.set_visual(screen.get_rgba_visual())
