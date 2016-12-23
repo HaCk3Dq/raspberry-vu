@@ -26,7 +26,10 @@ class ConfigManager(dict):
 	def __init__(self, configfile, winstate_valid=[]):
 		self.winstate_valid = winstate_valid
 		self.configfile = configfile
-		self.defconfig = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config")
+		if os.path.isfile("/usr/share/spectrumyzer/config"):
+			self.defconfig = "/usr/share/spectrumyzer/config"
+		else:
+			self.defconfig = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config")
 
 		if not os.path.isfile(configfile):
 			shutil.copyfile(self.defconfig, configfile)
