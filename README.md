@@ -9,10 +9,10 @@ Dependencies
 Make sure you have `git` and the full `gcc` stack installed, and then install the following packages: 
 
 ```
-python2
+python
 cairo
-python2-cairo
-python2-gobject
+python-cairo
+python-gobject
 fftw
 libpulse
 ```
