@@ -1,8 +1,7 @@
 Spectrumyzer
 ==============
 
-<img src='scrotDesk.png'>
-<img src='scrotDesk2.png'>
+<img src='scrotDesk.jpg'>
 
 Dependencies
 --------------
