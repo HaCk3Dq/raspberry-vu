@@ -51,6 +51,7 @@ class ConfigManager(dict):
 	def read_spec_data(self):
 		self["source"] = self.parser.getint("Main", "source")
 		self["desktop"] = self.parser.getboolean("Main", "desktop")
+		self["desktop_mode"] = self.parser.get("Main", "desktop_mode")
 		self["padding"] = self.parser.getint("Bars", "padding")
 		self["scale"] = self.parser.getfloat("Bars", "scale")
 
@@ -80,22 +81,24 @@ class MainApp:
 
 		# init window
 		self.window = Gtk.Window()
+		screen = self.window.get_screen()
 		if self.config["desktop"]:
+			if self.config["desktop_mode"] == "true_desktop":
 			# this section strongly depends on the system window manager
 			# current setting is suitable for awesome WM v3.5.9
 
 			# true desktop
-			# self.window.set_type_hint(Gdk.WindowTypeHint.DESKTOP)
+				self.window.set_type_hint(Gdk.WindowTypeHint.DESKTOP)
+				self.window.set_default_size(screen.get_width(),screen.get_height())
 			# self.window.fullscreen()
-
+			elif self.config["desktop_mode"] == "pseudo_desktop":
 			# pseudo desktop (doesn't overlap awesome desktop wiboxes but steal focus)
-			self.window.maximize()
-			self.window.set_keep_below(True)
-			self.window.set_skip_taskbar_hint(True)
-			self.window.set_skip_pager_hint(True)
+				self.window.maximize()
+				self.window.set_keep_below(True)
+				self.window.set_skip_taskbar_hint(True)
+				self.window.set_skip_pager_hint(True)
 
 		# set window transparent
-		screen = self.window.get_screen()
 		self.window.set_visual(screen.get_rgba_visual())
 		self.window.override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(0, 0, 0, 0))
 
