@@ -73,20 +73,36 @@ class ConfigManager(dict):
 
 class WindowState:
 	"""Window properties manager"""
-	valid = ("normal", "desktop", "screensize", "fullscreen", "maximize", "keep_below", "skip_taskbar", "skip_pager")
+	valid = ("normal", "desktop", "screensize", "fullscreen", "maximize", "keep_below", "skip_taskbar", "skip_pager", "workarea")
 
-	def __init__(self, window, screen_size):
+	def __init__(self, window):
 		self.window = window
+
+		screen = self.window.get_screen()
+
+		def use_screensize():
+			self.window.set_default_size(screen.get_width(), screen.get_height())
+
+		def use_workarea():
+			try:
+				display = screen.get_display()
+				monitor = display.get_primary_monitor() or display.get_monitor(0)
+				workarea = monitor.get_workarea()
+				self.window.set_default_size(workarea.width, workarea.height)
+				self.window.move(workarea.x, workarea.y)
+			except AttributeError:
+				use_screensize()
 
 		self.actions = dict(
 			normal = lambda: None,
 			desktop = lambda: self.window.set_type_hint(Gdk.WindowTypeHint.DESKTOP),
-			screensize = lambda: self.window.set_default_size(*screen_size),
+			screensize = use_screensize,
 			fullscreen = lambda: self.window.fullscreen(),
 			maximize = lambda: self.window.maximize(),
 			keep_below = lambda: self.window.set_keep_below(True),
 			skip_taskbar = lambda: self.window.set_skip_taskbar_hint(True),
 			skip_pager = lambda: self.window.set_skip_pager_hint(True),
+			workarea = use_workarea,
 		)
 
 	def setup(self, *settings):
@@ -105,7 +121,7 @@ class MainApp:
 		# init window
 		self.window = Gtk.Window()
 		screen = self.window.get_screen()
-		self.winstate = WindowState(self.window, [screen.get_width(), screen.get_height()])
+		self.winstate = WindowState(self.window)
 
 		# load config
 		self.configfile = os.path.expanduser("~/.config/spectrum.conf")
