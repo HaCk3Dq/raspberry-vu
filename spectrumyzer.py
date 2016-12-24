@@ -152,7 +152,8 @@ class MainApp:
 
 		total_width = (self.bars.win_width - self.config["left_offset"]) - self.bars.padding * (self.bars.number - 1)
 		self.bars.width = max(int(total_width / self.bars.number), 1)
-		self.bars.height = (self.bars.win_height - self.config["top_offset"]) / 2
+		self.bars.height = self.bars.win_height - self.config["top_offset"]
+		if "desktop" in self.config["state"]: self.bars.height = self.bars.height / 2
 		self.bars.mark = total_width % self.bars.number  # width correnction point
 
 	def update(self):
