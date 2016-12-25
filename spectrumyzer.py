@@ -122,13 +122,13 @@ class Filter:
 		self.slowpeak_scale = config["slowpeak_scale"]
 		self.gravity_scale = config["gravity_scale"]
 		self.bars = bars
-		self.g = self.bars.height / 270
+		self.g = self.bars.height / 3000000
 
 	def gravity(self, prev, raw, fall):
 		for i in range(0, self.bars.number):
 			if raw[i] < prev[i]:
 				fall[i] += 1
-				prev[i] -= fall[i] * 0.0001 * self.gravity_scale
+				prev[i] -= fall[i] * self.g * self.gravity_scale
 			else:
 				fall[i] = 0
 
