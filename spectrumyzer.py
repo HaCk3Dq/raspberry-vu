@@ -56,6 +56,7 @@ class ConfigManager(dict):
 		self["source"] = self.parser.getint("Main", "source")
 		self["padding"] = self.parser.getint("Bars", "padding")
 		self["scale"] = self.parser.getfloat("Bars", "scale")
+		self["inertia"] = self.parser.getfloat("Main", "inertia")
 
 		for key in ("left", "right", "top", "bottom"):
 			self[key + "_offset"] = self.parser.getint("Offset", key)
@@ -181,6 +182,14 @@ class MainApp:
 			self.draw_area.queue_draw()
 		return True
 
+	def inertial_filter(self, p, r):
+		"""Like old filter, but only for downscaling. Looks good with 2-3 multiplier"""
+		if r < p:
+			p = p + (r - p)/self.config["inertia"]
+		else:
+			p = r
+		return p
+
 	def redraw(self, widget, cr):
 		"""Draw spectrum graph"""
 		cr.set_source_rgba(*self.config["rgba"])
@@ -188,7 +197,7 @@ class MainApp:
 		raw = list(map(lambda a, b: (a + b) / 2, self.audio_sample[::2], self.audio_sample[1::2]))
 		if self.previous_sample == []:
 			self.previous_sample = raw
-		self.previous_sample = list(map(lambda p, r: p + (r - p) / 1.3, self.previous_sample, raw))
+		self.previous_sample = list(map(lambda p, r: self.inertial_filter(p, r), self.previous_sample, raw))
 
 		dx = self.config["left_offset"]
 		for i, value in enumerate(self.previous_sample):

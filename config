@@ -1,5 +1,6 @@
 [Main]
 source = 0
+inertia = 5
 
 # valid options: normal, desktop, screensize, workarea, fullscreen, maximize, keep_below, skip_taskbar, skip_pager
 state = desktop, screensize
