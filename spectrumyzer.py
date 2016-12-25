@@ -57,6 +57,9 @@ class ConfigManager(dict):
 		self["padding"] = self.parser.getint("Bars", "padding")
 		self["scale"] = self.parser.getfloat("Bars", "scale")
 
+		for fltr in ("slowpeak", "gravity"):
+			self[fltr + "_scale"] = self.parser.getfloat("Filter", fltr)
+
 		for key in ("left", "right", "top", "bottom"):
 			self[key + "_offset"] = self.parser.getint("Offset", key)
 
@@ -113,12 +116,43 @@ class WindowState:
 			self.actions[state]()
 
 
+class Filter:
+	"""Class containing all future filters"""
+	def __init__(self, bars, config):
+		self.slowpeak_scale = config["slowpeak_scale"]
+		self.gravity_scale = config["gravity_scale"]
+		self.bars = bars
+		self.g = self.bars.height / 3000000
+
+	def gravity(self, prev, raw, fall):
+		for i in range(0, self.bars.number):
+			if raw[i] < prev[i]:
+				fall[i] += 1
+				prev[i] -= fall[i] * self.g * self.gravity_scale
+			else:
+				fall[i] = 0
+
+	def monstercat(self, prev, raw):
+		return True
+
+	def slowpeaks(self, prev, raw):
+		for i in range(0, self.bars.number):
+			if raw[i] > prev[i]:
+				prev[i] += (raw[i] - prev[i]) / self.slowpeak_scale
+
+	def apply(self, prev, raw, fall):
+		self.gravity(prev, raw, fall)
+		self.slowpeaks(prev, raw)
+		# return prev, fall
+
+
 class MainApp:
 	"""Main application class"""
 	def __init__(self):
 		self.silence_value = 0
 		self.audio_sample = []
 		self.previous_sample = []  # this is formatted one so its len may be different from original
+		self.fall_time = []
 
 		# init window
 		self.window = Gtk.Window()
@@ -174,6 +208,9 @@ class MainApp:
 		if "desktop" in self.config["state"]: self.bars.height /= 2
 		self.bars.mark = total_width % self.bars.number  # width correnction point
 
+		# initialize filters
+		self.filter = Filter(self.bars, self.config)
+
 	def update(self):
 		"""Main update loop handler """
 		self.audio_sample = impulse.getSnapshot(True)[:128]
@@ -188,7 +225,9 @@ class MainApp:
 		raw = list(map(lambda a, b: (a + b) / 2, self.audio_sample[::2], self.audio_sample[1::2]))
 		if self.previous_sample == []:
 			self.previous_sample = raw
-		self.previous_sample = list(map(lambda p, r: p + (r - p) / 1.3, self.previous_sample, raw))
+		if self.fall_time == []:
+			self.fall_time = [0] * self.bars.number
+		self.filter.apply(self.previous_sample, raw, self.fall_time)
 
 		dx = self.config["left_offset"]
 		for i, value in enumerate(self.previous_sample):

@@ -14,3 +14,7 @@ left = 5
 right = 5
 top = 5
 bottom = 5
+
+[Filter]
+gravity = 6
+slowpeak = 2
