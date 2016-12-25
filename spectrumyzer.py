@@ -118,13 +118,14 @@ class WindowState:
 
 class Filter:
 	"""Class containing all future filters"""
-	def __init__(self, barsNumber, config):
+	def __init__(self, bars, config):
 		self.slowpeak_scale = config["slowpeak_scale"]
 		self.gravity_scale = config["gravity_scale"]
-		self.barsNumber = barsNumber
+		self.bars = bars
+		self.g = self.bars.height / 270
 
 	def gravity(self, prev, raw, fall):
-		for i in range(0, self.barsNumber):
+		for i in range(0, self.bars.number):
 			if raw[i] < prev[i]:
 				fall[i] += 1
 				prev[i] -= fall[i] * 0.0001 * self.gravity_scale
@@ -135,7 +136,7 @@ class Filter:
 		return True
 
 	def slowpeaks(self, prev, raw):
-		for i in range(0, self.barsNumber):
+		for i in range(0, self.bars.number):
 			if raw[i] > prev[i]:
 				prev[i] += (raw[i] - prev[i]) / self.slowpeak_scale
 
@@ -183,9 +184,6 @@ class MainApp:
 		self.bars.padding = self.config["padding"]
 		self.bars.number = 64
 
-		# initialize filters
-		self.filter = Filter(self.bars.number, self.config)
-
 		# signals
 		GLib.timeout_add(33, self.update)
 		self.window.connect("delete-event", self.close)
@@ -210,6 +208,9 @@ class MainApp:
 		if "desktop" in self.config["state"]: self.bars.height /= 2
 		self.bars.mark = total_width % self.bars.number  # width correnction point
 
+		# initialize filters
+		self.filter = Filter(self.bars, self.config)
+
 	def update(self):
 		"""Main update loop handler """
 		self.audio_sample = impulse.getSnapshot(True)[:128]
@@ -226,7 +227,6 @@ class MainApp:
 			self.previous_sample = raw
 		if self.fall_time == []:
 			self.fall_time = [0] * self.bars.number
-		# self.previous_sample, self.fall_time = self.filter.apply(self.previous_sample, raw, self.fall_time)
 		self.filter.apply(self.previous_sample, raw, self.fall_time)
 
 		dx = self.config["left_offset"]
