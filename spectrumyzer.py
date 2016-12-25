@@ -56,7 +56,9 @@ class ConfigManager(dict):
 		self["source"] = self.parser.getint("Main", "source")
 		self["padding"] = self.parser.getint("Bars", "padding")
 		self["scale"] = self.parser.getfloat("Bars", "scale")
-		self["inertia"] = self.parser.getfloat("Main", "inertia")
+
+		for fltr in ("slowpeak", "gravity"):
+			self[fltr + "_scale"] = self.parser.getfloat("Filter", fltr)
 
 		for key in ("left", "right", "top", "bottom"):
 			self[key + "_offset"] = self.parser.getint("Offset", key)
@@ -117,14 +119,15 @@ class WindowState:
 class Filter:
 	"""Class containing all future filters"""
 	def __init__(self, barsNumber, config):
-		self.slow = config["inertia"]
+		self.slowpeak_scale = config["slowpeak_scale"]
+		self.gravity_scale = config["gravity_scale"]
 		self.barsNumber = barsNumber
 
 	def gravity(self, prev, raw, fall):
 		for i in range(0, self.barsNumber):
 			if raw[i] < prev[i]:
 				fall[i] += 1
-				prev[i] -= fall[i] * 0.001
+				prev[i] -= fall[i] * 0.0001 * self.gravity_scale
 			else:
 				fall[i] = 0
 
@@ -134,7 +137,7 @@ class Filter:
 	def slowpeaks(self, prev, raw):
 		for i in range(0, self.barsNumber):
 			if raw[i] > prev[i]:
-				prev[i] += (raw[i] - prev[i]) / self.slow
+				prev[i] += (raw[i] - prev[i]) / self.slowpeak_scale
 
 	def apply(self, prev, raw, fall):
 		self.gravity(prev, raw, fall)
