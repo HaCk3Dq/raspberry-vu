@@ -131,23 +131,40 @@ class Filter:
 	def gravity(self, prev, new, fall):
 		for i in range(0, self.bars.number):
 			if new[i] < prev[i]:
-				fall[i] += 1
 				prev[i] -= fall[i] * self.g * self.gravity_scale
+				fall[i] += 1
 			else:
 				fall[i] = 0
 
-	def monstercat(self, prev, new):
-		return True
+	def waves(self, prev):
+		for i in range(0, self.bars.number):
+			for j in reversed(range(0, i - 1)):
+				k = i - j
+				prev[j] = max(prev[i] - pow(k, 2), prev[j])
+			for j in range(i + 1, self.bars.number):
+				k = j - i
+				prev[j] = max(prev[i] - pow(k, 2), prev[j])
 
-	def slowpeaks(self, prev, new):
+	def cat(self, prev):
+		for i in range(0, self.bars.number):
+			for j in reversed(range(0, i - 1)):
+				k = i - j
+				prev[j] = max(prev[i] / pow(1.5, k), prev[j])  # 1.5 multiplier taked here from cava sources. Making it bigger does nothing
+			for j in range(i + 1, self.bars.number):
+				k = j - i
+				prev[j] = max(prev[i] / pow(1.5, k), prev[j])
+
+	def slowpeak(self, prev, new):
 		for i in range(0, self.bars.number):
 			if new[i] > prev[i]:
 				prev[i] += (new[i] - prev[i]) / self.slowpeak_scale
 
 	def apply(self, prev, new, fall):
 		self.gravity(prev, new, fall)
-		self.slowpeaks(prev, new)
+		self.slowpeak(prev, new)
 		# self.none(prev, new)
+		# self.waves(prev)
+		self.cat(prev)
 
 
 class MainApp:
@@ -155,7 +172,7 @@ class MainApp:
 	def __init__(self):
 		self.silence_value = 0
 		self.previous_sample_height = []  # this is formatted one so its len may be different from original
-		self.new_sample_height = [] # formated audio_sample
+		self.new_sample_height = []  # formated audio_sample
 		self.fall_time = []
 
 		# init window
