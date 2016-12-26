@@ -154,7 +154,6 @@ class MainApp:
 	"""Main application class"""
 	def __init__(self):
 		self.silence_value = 0
-		self.audio_sample = []
 		self.previous_sample_height = []  # this is formatted one so its len may be different from original
 		self.new_sample_height = [] # formated audio_sample
 		self.fall_time = []
@@ -188,6 +187,7 @@ class MainApp:
 		self.bars = AttributeDict()
 		self.bars.padding = self.config["padding"]
 		self.bars.number = 64
+		self.audio_sample = [0] * (2 * self.bars.number)
 
 		# signals
 		GLib.timeout_add(33, self.update)
