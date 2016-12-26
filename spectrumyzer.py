@@ -221,6 +221,10 @@ class MainApp:
 		self.audio_sample = impulse.getSnapshot(True)[:128]
 		if not self.is_silence(self.audio_sample[0]):
 			self.draw_area.queue_draw()
+		elif self.silence_value == 11:
+			self.audio_sample = [0] * (2 * self.bars.number)
+			self.previous_sample_height = [1] * self.bars.number
+			self.draw_area.queue_draw()
 		return True
 
 	def redraw(self, widget, cr):
