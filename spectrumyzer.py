@@ -149,10 +149,10 @@ class Filter:
 		for i in range(0, self.bars.number):
 			for j in reversed(range(0, i - 1)):
 				k = i - j
-				prev[j] = max(prev[i] / pow(1.5, k), prev[j])  # 1.5 multiplier taked here from cava sources. Making it bigger does nothing
+				prev[j] = max(prev[i] / pow(1.3, k), prev[j])
 			for j in range(i + 1, self.bars.number):
 				k = j - i
-				prev[j] = max(prev[i] / pow(1.5, k), prev[j])
+				prev[j] = max(prev[i] / pow(1.3, k), prev[j])
 
 	def slowpeak(self, prev, new):
 		for i in range(0, self.bars.number):
@@ -160,11 +160,13 @@ class Filter:
 				prev[i] += (new[i] - prev[i]) / self.slowpeak_scale
 
 	def apply(self, prev, new, fall):
+		self.cat(new)
+		self.cat(prev)
+		# self.waves(new)
+		# self.waves(prev)
 		self.gravity(prev, new, fall)
 		self.slowpeak(prev, new)
 		# self.none(prev, new)
-		# self.waves(prev)
-		self.cat(prev)
 
 
 class MainApp:
