@@ -15,6 +15,12 @@ right = 5
 top = 5
 bottom = 5
 
-[Filter]
-gravity = 6
+[Smoothing]
+# Valid modes: none, normal, scientific, waves
+mode = normal
+
+# default fall acceleration is 1% of maximum bar height per frame. more - faster bars fall speed
+gravity = 1
+
+# number of frames to delay fast bars raising. more - slower
 slowpeak = 2

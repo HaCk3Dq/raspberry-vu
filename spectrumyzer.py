@@ -25,6 +25,7 @@ class ConfigManager(dict):
 	"""Read some program setting from file"""
 	def __init__(self, configfile, winstate_valid=[]):
 		self.winstate_valid = winstate_valid
+		self.valid_modes = ["none", "normal", "waves", "scientific"]
 		self.configfile = configfile
 		if os.path.isfile("/usr/share/spectrumyzer/config"):
 			self.defconfig = "/usr/share/spectrumyzer/config"
@@ -58,7 +59,11 @@ class ConfigManager(dict):
 		self["scale"] = self.parser.getfloat("Bars", "scale")
 
 		for fltr in ("slowpeak", "gravity"):
-			self[fltr + "_scale"] = self.parser.getfloat("Filter", fltr)
+			self[fltr + "_scale"] = self.parser.getfloat("Smoothing", fltr)
+
+		self["mode"] = self.parser.get("Smoothing", "mode")
+		if not self["mode"] in self.valid_modes:
+			raise Exception("Wrong mode setting")
 
 		for key in ("left", "right", "top", "bottom"):
 			self[key + "_offset"] = self.parser.getint("Offset", key)
@@ -119,14 +124,52 @@ class WindowState:
 class Filter:
 	"""Class containing all future filters"""
 	def __init__(self, bars, config):
+		self.bars = bars
+		self.g = self.bars.height / 100
 		self.slowpeak_scale = config["slowpeak_scale"]
 		self.gravity_scale = config["gravity_scale"]
-		self.bars = bars
-		self.g = self.bars.height / 250
+		self.mode = config["mode"]
+		self.modes = dict(
+			none = lambda prev, new, fall: self.none(prev, new),
+			normal = lambda prev, new, fall: self.normal(prev, new, fall),
+			waves = lambda prev, new, fall: self.waves(prev, new, fall),
+			scientific = lambda prev, new, fall: self.cat(prev, new, fall)
+		)
 
 	def none(self, prev, new):
 		for i in range(0, self.bars.number):
 			prev[i] = new[i]
+
+	def normal(self, prev, new, fall):
+		self.gravity(prev, new, fall)
+		self.slowpeak(prev, new)
+
+	def waves(self, prev, new, fall):
+		for i in range(0, self.bars.number):
+			for j in reversed(range(0, i - 1)):
+				k = i - j
+				new[j] = max(new[i] - pow(k, 2) * 4, new[j])
+			for j in range(i + 1, self.bars.number):
+				k = j - i
+				new[j] = max(new[i] - pow(k, 2) * 4, new[j])
+		self.gravity(prev, new, fall)
+		self.slowpeak(prev, new)
+
+	def cat(self, prev, new, fall):
+		for i in range(0, self.bars.number):
+			for j in reversed(range(0, i - 1)):
+				k = i - j
+				new[j] = max(new[i] / pow(1.3, k), new[j])
+			for j in range(i + 1, self.bars.number):
+				k = j - i
+				new[j] = max(new[i] / pow(1.3, k), new[j])
+		self.gravity(prev, new, fall)
+		self.slowpeak(prev, new)
+
+	def slowpeak(self, prev, new):
+		for i in range(0, self.bars.number):
+			if new[i] > prev[i]:
+				prev[i] += (new[i] - prev[i]) / self.slowpeak_scale
 
 	def gravity(self, prev, new, fall):
 		for i in range(0, self.bars.number):
@@ -136,37 +179,8 @@ class Filter:
 			else:
 				fall[i] = 0
 
-	def waves(self, prev):
-		for i in range(0, self.bars.number):
-			for j in reversed(range(0, i - 1)):
-				k = i - j
-				prev[j] = max(prev[i] - pow(k, 2), prev[j])
-			for j in range(i + 1, self.bars.number):
-				k = j - i
-				prev[j] = max(prev[i] - pow(k, 2), prev[j])
-
-	def cat(self, prev):
-		for i in range(0, self.bars.number):
-			for j in reversed(range(0, i - 1)):
-				k = i - j
-				prev[j] = max(prev[i] / pow(1.3, k), prev[j])
-			for j in range(i + 1, self.bars.number):
-				k = j - i
-				prev[j] = max(prev[i] / pow(1.3, k), prev[j])
-
-	def slowpeak(self, prev, new):
-		for i in range(0, self.bars.number):
-			if new[i] > prev[i]:
-				prev[i] += (new[i] - prev[i]) / self.slowpeak_scale
-
 	def apply(self, prev, new, fall):
-		self.cat(new)
-		self.cat(prev)
-		# self.waves(new)
-		# self.waves(prev)
-		self.gravity(prev, new, fall)
-		self.slowpeak(prev, new)
-		# self.none(prev, new)
+		self.modes[self.mode](prev, new, fall)
 
 
 class MainApp:
