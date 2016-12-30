@@ -24,3 +24,6 @@ gravity = 1
 
 # number of frames to delay fast bars raising. more - slower
 slowpeak = 2
+
+# agressiveness of waves mode. less - more agressive smoothing (1 is most agressive)
+waves = 2
