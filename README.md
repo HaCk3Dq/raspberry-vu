@@ -2,7 +2,7 @@ Spectrumyzer
 ==============
 
 [![prev](https://i.ytimg.com/vi/nsqza-5bOK8/maxresdefault.jpg)](http://www.youtube.com/watch?v=nsqza-5bOK8)
-
+(click on the preview to watch demo)
 Dependencies
 --------------
 
