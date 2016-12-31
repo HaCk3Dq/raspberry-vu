@@ -27,3 +27,6 @@ slowpeak = 2
 
 # agressiveness of waves mode. less - more agressive smoothing (1 is most agressive)
 waves = 2
+
+# agressiveness of scientific mode. less - more agressive smoothing (1 is most agressive)
+scientific = 3

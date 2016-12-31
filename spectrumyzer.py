@@ -58,7 +58,7 @@ class ConfigManager(dict):
 		self["padding"] = self.parser.getint("Bars", "padding")
 		self["scale"] = self.parser.getfloat("Bars", "scale")
 
-		for fltr in ("slowpeak", "gravity", "waves"):
+		for fltr in ("slowpeak", "gravity", "waves", "scientific"):
 			self[fltr + "_scale"] = self.parser.getfloat("Smoothing", fltr)
 
 		self["mode"] = self.parser.get("Smoothing", "mode")
@@ -129,6 +129,7 @@ class Filter:
 		self.slowpeak_scale = config["slowpeak_scale"]
 		self.gravity_scale = config["gravity_scale"]
 		self.waves_scale = config["waves_scale"]
+		self.cat_scale = 1 + 0.1 * config["scientific_scale"]
 		self.mode = config["mode"]
 		self.modes = dict(
 			none = lambda prev, new, fall: self.none(prev, new),
@@ -161,10 +162,10 @@ class Filter:
 		for i in range(0, self.bars.number):
 			for j in reversed(range(0, i - 1)):
 				k = i - j
-				new[j] = max(new[i] / pow(1.3, k), new[j])
+				new[j] = max(new[i] / pow(self.cat_scale, k), new[j])
 			for j in range(i + 1, self.bars.number):
 				k = j - i
-				new[j] = max(new[i] / pow(1.3, k), new[j])
+				new[j] = max(new[i] / pow(self.cat_scale, k), new[j])
 		self.gravity(prev, new, fall)
 		self.slowpeak(prev, new)
 
