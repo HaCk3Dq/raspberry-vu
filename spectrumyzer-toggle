@@ -1,0 +1,5 @@
+#/bin/bash
+
+kill $(pgrep spectrumyzer) >/dev/null 2>&1 || spectrumyzer &
+disown
+exit
