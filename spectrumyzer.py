@@ -255,8 +255,7 @@ class MainApp:
 	def update(self):
 		"""Main update loop handler """
 		self.audio_sample = impulse.getSnapshot(True)[:128]
-		if not self.is_silence(self.audio_sample[0]):
-			self.draw_area.queue_draw()
+		self.draw_area.queue_draw()
 		return True
 
 	def redraw(self, widget, cr):
