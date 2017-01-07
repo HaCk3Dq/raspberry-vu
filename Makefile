@@ -19,5 +19,5 @@ impulse.o:
 
 module.o:
 	gcc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall\
-		-Wstrict-prototypes -fPIC -I/usr/include/python3.5m \
+		-Wstrict-prototypes -fPIC -I/usr/include/python3.6m \
 		-c src/module.c -o $(BUILD_DIR)/module.o
