@@ -1,6 +1,6 @@
 pkgname=spectrumyzer
-pkgver=1.1
-pkgrel=2
+pkgver=1.1.1
+pkgrel=1
 pkgdesc="Spectrum analyzer rendered on a desktop"
 arch=('x86_64' 'i686')
 url="https://github.com/HaCk3Dq/spectrumyzer"
@@ -29,6 +29,7 @@ package() {
   mkdir -p "${pkgdir}/usr/share/spectrumyzer"
   cp spectrumyzer.py "${pkgdir}/usr/bin/spectrumyzer"
   cp impulse.so "${pkgdir}/usr/lib/python3.6/impulse.so"
+  cp spectrumyzer-toggle "${pkgdir}/usr/bin/spectrumyzer-toggle"
   cp spectrumyzer.desktop "${pkgdir}/usr/share/applications/spectrumyzer.desktop"
   cp config "${pkgdir}/usr/share/spectrumyzer/config"
 }

@@ -7,5 +7,5 @@ Name=Spectrumyzer
 Comment="Spectrum analyzer rendered on a desktop"
 Categories=Utility
 
-Exec=spectrumyzer
+Exec=spectrumyzer-toggle
 Terminal=false

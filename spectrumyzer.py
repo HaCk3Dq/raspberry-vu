@@ -25,6 +25,7 @@ class ConfigManager(dict):
 	"""Read some program setting from file"""
 	def __init__(self, configfile, winstate_valid=[]):
 		self.winstate_valid = winstate_valid
+		self.valid_modes = ["none", "normal", "waves", "scientific"]
 		self.configfile = configfile
 		if os.path.isfile("/usr/share/spectrumyzer/config"):
 			self.defconfig = "/usr/share/spectrumyzer/config"
@@ -41,6 +42,7 @@ class ConfigManager(dict):
 		self.parser = ConfigParser()
 		try:
 			# TODO: add logger module for colored output
+			self.parser.read(self.defconfig)
 			self.parser.read(configfile)
 			self.read_spec_data()
 		except Exception as e:
@@ -57,8 +59,12 @@ class ConfigManager(dict):
 		self["padding"] = self.parser.getint("Bars", "padding")
 		self["scale"] = self.parser.getfloat("Bars", "scale")
 
-		for fltr in ("slowpeak", "gravity"):
-			self[fltr + "_scale"] = self.parser.getfloat("Filter", fltr)
+		for fltr in ("slowpeak", "gravity", "waves", "scientific"):
+			self[fltr + "_scale"] = self.parser.getfloat("Smoothing", fltr)
+
+		self["mode"] = self.parser.get("Smoothing", "mode")
+		if not self["mode"] in self.valid_modes:
+			raise Exception("Wrong mode setting")
 
 		for key in ("left", "right", "top", "bottom"):
 			self[key + "_offset"] = self.parser.getint("Offset", key)
@@ -119,39 +125,74 @@ class WindowState:
 class Filter:
 	"""Class containing all future filters"""
 	def __init__(self, bars, config):
+		self.bars = bars
+		self.g = self.bars.height / 100
 		self.slowpeak_scale = config["slowpeak_scale"]
 		self.gravity_scale = config["gravity_scale"]
-		self.bars = bars
-		self.g = self.bars.height / 3000000
+		self.waves_scale = config["waves_scale"]
+		self.cat_scale = 1 + 0.1 * config["scientific_scale"]
+		self.mode = config["mode"]
+		self.modes = dict(
+			none = lambda prev, new, fall: self.none(prev, new),
+			normal = lambda prev, new, fall: self.normal(prev, new, fall),
+			waves = lambda prev, new, fall: self.waves(prev, new, fall),
+			scientific = lambda prev, new, fall: self.cat(prev, new, fall)
+		)
 
-	def gravity(self, prev, raw, fall):
+	def none(self, prev, new):
 		for i in range(0, self.bars.number):
-			if raw[i] < prev[i]:
-				fall[i] += 1
+			prev[i] = new[i]
+
+	def normal(self, prev, new, fall):
+		self.gravity(prev, new, fall)
+		self.slowpeak(prev, new)
+
+	def waves(self, prev, new, fall):
+		for i in range(0, self.bars.number):
+			new[i] = new[i] / 1.3
+			for j in reversed(range(0, i - 1)):
+				k = i - j
+				new[j] = max(new[i] - pow(k, 2) * self.waves_scale, new[j])
+			for j in range(i + 1, self.bars.number):
+				k = j - i
+				new[j] = max(new[i] - pow(k, 2) * self.waves_scale, new[j])
+		self.gravity(prev, new, fall)
+		self.slowpeak(prev, new)
+
+	def cat(self, prev, new, fall):
+		for i in range(0, self.bars.number):
+			for j in reversed(range(0, i - 1)):
+				k = i - j
+				new[j] = max(new[i] / pow(self.cat_scale, k), new[j])
+			for j in range(i + 1, self.bars.number):
+				k = j - i
+				new[j] = max(new[i] / pow(self.cat_scale, k), new[j])
+		self.gravity(prev, new, fall)
+		self.slowpeak(prev, new)
+
+	def slowpeak(self, prev, new):
+		for i in range(0, self.bars.number):
+			if new[i] > prev[i]:
+				prev[i] += (new[i] - prev[i]) / self.slowpeak_scale
+
+	def gravity(self, prev, new, fall):
+		for i in range(0, self.bars.number):
+			if new[i] < prev[i]:
 				prev[i] -= fall[i] * self.g * self.gravity_scale
+				fall[i] += 1
 			else:
 				fall[i] = 0
 
-	def monstercat(self, prev, raw):
-		return True
-
-	def slowpeaks(self, prev, raw):
-		for i in range(0, self.bars.number):
-			if raw[i] > prev[i]:
-				prev[i] += (raw[i] - prev[i]) / self.slowpeak_scale
-
-	def apply(self, prev, raw, fall):
-		self.gravity(prev, raw, fall)
-		self.slowpeaks(prev, raw)
-		# return prev, fall
+	def apply(self, prev, new, fall):
+		self.modes[self.mode](prev, new, fall)
 
 
 class MainApp:
 	"""Main application class"""
 	def __init__(self):
 		self.silence_value = 0
-		self.audio_sample = []
-		self.previous_sample = []  # this is formatted one so its len may be different from original
+		self.previous_sample_height = []  # this is formatted one so its len may be different from original
+		self.new_sample_height = []  # formated audio_sample
 		self.fall_time = []
 
 		# init window
@@ -183,6 +224,7 @@ class MainApp:
 		self.bars = AttributeDict()
 		self.bars.padding = self.config["padding"]
 		self.bars.number = 64
+		self.audio_sample = [0] * (2 * self.bars.number)
 
 		# signals
 		GLib.timeout_add(33, self.update)
@@ -214,25 +256,24 @@ class MainApp:
 	def update(self):
 		"""Main update loop handler """
 		self.audio_sample = impulse.getSnapshot(True)[:128]
-		if not self.is_silence(self.audio_sample[0]):
-			self.draw_area.queue_draw()
+		self.draw_area.queue_draw()
 		return True
 
 	def redraw(self, widget, cr):
 		"""Draw spectrum graph"""
 		cr.set_source_rgba(*self.config["rgba"])
 
-		raw = list(map(lambda a, b: (a + b) / 2, self.audio_sample[::2], self.audio_sample[1::2]))
-		if self.previous_sample == []:
-			self.previous_sample = raw
+		new_sample = list(map(lambda a, b: (a + b) / 2, self.audio_sample[::2], self.audio_sample[1::2]))
+		self.new_sample_height = list(map(lambda a: self.bars.height * min(self.config["scale"] * a, 1), new_sample))
+		if self.previous_sample_height == []:
+			self.previous_sample_height = self.new_sample_height
 		if self.fall_time == []:
 			self.fall_time = [0] * self.bars.number
-		self.filter.apply(self.previous_sample, raw, self.fall_time)
+		self.filter.apply(self.previous_sample_height, self.new_sample_height, self.fall_time)
 
 		dx = self.config["left_offset"]
-		for i, value in enumerate(self.previous_sample):
+		for i, height in enumerate(self.previous_sample_height):
 			width = self.bars.width + int(i < self.bars.mark)
-			height = self.bars.height * min(self.config["scale"] * value, 1)
 			cr.rectangle(dx, self.bars.win_height, width, - height)
 			dx += width + self.bars.padding
 		cr.fill()

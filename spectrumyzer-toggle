@@ -1,0 +1,10 @@
+#/bin/bash
+
+dir=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
+if [[ -f "$dir/spectrumyzer.py" ]]; then
+  kill $(pgrep spectrumyzer) >/dev/null 2>&1 || "$dir/spectrumyzer.py" &
+else
+  kill $(pgrep spectrumyzer) >/dev/null 2>&1 || spectrumyzer &
+fi
+disown
+exit
