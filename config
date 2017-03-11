@@ -7,7 +7,7 @@ state = desktop, screensize
 [Bars]
 padding = 5
 scale = 1
-rgba = #80808080
+rgba = #080080080080
 
 [Offset]
 left = 5
