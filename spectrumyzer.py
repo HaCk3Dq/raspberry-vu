@@ -71,7 +71,7 @@ class ConfigManager(dict):
 
 		# color
 		hex_ = self.parser.get("Bars", "rgba").lstrip("#")
-		nums = [int(hex_[i:i + 2], 16) / 255.0 for i in range(0, 7, 2)]
+		nums = [int(hex_[i:i + 3], 16) / 255.0 for i in range(0, 12, 3)]
 		self["rgba"] = Gdk.RGBA(*nums)
 
 		# window state
