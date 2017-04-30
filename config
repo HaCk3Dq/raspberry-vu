@@ -3,11 +3,15 @@ source = 0
 
 # valid options: normal, desktop, screensize, workarea, fullscreen, maximize, keep_below, skip_taskbar, skip_pager
 state = desktop, screensize
+# valid options: bars, curves
+render = bars
 
 [Bars]
 padding = 5
 scale = 1
 rgba = #80808080
+# number of bars, also used if render=curves
+count = 64
 
 [Offset]
 left = 5
