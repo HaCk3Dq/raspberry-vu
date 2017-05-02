@@ -56,8 +56,10 @@ class ConfigManager(dict):
 
 	def read_spec_data(self):
 		self["source"] = self.parser.getint("Main", "source")
+		self["render_method"] = self.parser.get("Main", "render")
 		self["padding"] = self.parser.getint("Bars", "padding")
 		self["scale"] = self.parser.getfloat("Bars", "scale")
+		self["bars_count"] = self.parser.getint("Bars", "count")
 
 		for fltr in ("slowpeak", "gravity", "waves", "scientific"):
 			self[fltr + "_scale"] = self.parser.getfloat("Smoothing", fltr)
@@ -223,7 +225,7 @@ class MainApp:
 		# semi constants for drawing
 		self.bars = AttributeDict()
 		self.bars.padding = self.config["padding"]
-		self.bars.number = 64
+		self.bars.number = self.config["bars_count"]
 		self.audio_sample = [0] * (2 * self.bars.number)
 
 		# signals
@@ -259,8 +261,58 @@ class MainApp:
 		self.draw_area.queue_draw()
 		return True
 
-	def redraw(self, widget, cr):
-		"""Draw spectrum graph"""
+	def render_curves(self, widget, cr):
+		"""Draw filled curves"""
+		new_sample = list(map(lambda a, b: (a + b) / 2, self.audio_sample[::2], self.audio_sample[1::2]))
+		self.new_sample_height = list(map(lambda a: self.bars.height * min(self.config["scale"] * a, 1), new_sample))
+		if self.previous_sample_height == []:
+			self.previous_sample_height = self.new_sample_height
+		if self.fall_time == []:
+			self.fall_time = [0] * self.bars.number
+		self.filter.apply(self.previous_sample_height, self.new_sample_height, self.fall_time)
+
+		dx = self.config["left_offset"]
+		width = self.bars.width + int(0 < self.bars.mark)
+		first_point_x = 0
+		first_point_y = self.bars.win_height - self.previous_sample_height[0]
+
+		cr.move_to(first_point_x, first_point_y)
+		# cr.line_to(first_point_x+(width/2), first_point_y)
+		next_rect_top_mid_y = 0
+
+		for i, height in enumerate(self.previous_sample_height):
+
+			width = self.bars.width + int(i < self.bars.mark)
+			rect_top_mid_x = dx+(width/2)
+			rect_top_mid_y = self.bars.win_height - height
+
+			next_sample_height = 0 
+			try:
+				next_sample_height = self.previous_sample_height[i+1]
+			except IndexError:
+				next_sample_height = self.previous_sample_height[i]
+			
+			dx += width + self.bars.padding
+
+			next_rect_top_mid_x = rect_top_mid_x + width
+			next_rect_top_mid_y = self.bars.win_height - next_sample_height
+
+			# control point cords
+			# Make sure these are symmetric
+			c1x = rect_top_mid_x + 16
+			c2x = next_rect_top_mid_x - 16
+			c1y = rect_top_mid_y
+			c2y = next_rect_top_mid_y
+
+			cr.curve_to(c1x, c1y, c2x, c2y, next_rect_top_mid_x, next_rect_top_mid_y)
+
+		cr.line_to(self.bars.win_width, next_rect_top_mid_y)
+		cr.line_to(self.bars.win_width, self.bars.win_height)
+		cr.line_to(self.config["left_offset"], self.bars.win_height)
+		cr.fill()
+
+	def render_bars(self, wideget, cr):
+		"""Draw bars"""
 		cr.set_source_rgba(*self.config["rgba"])
 
 		new_sample = list(map(lambda a, b: (a + b) / 2, self.audio_sample[::2], self.audio_sample[1::2]))
@@ -278,10 +330,17 @@ class MainApp:
 			dx += width + self.bars.padding
 		cr.fill()
 
+	def redraw(self, widget, cr):
+		"""Draw spectrum graph"""
+		cr.set_source_rgba(*self.config["rgba"])
+		method_name = "render_" + self.config["render_method"]
+		method = getattr(self, method_name)
+		method(widget, cr)
+		
+
 	def close(self, *args):
 		"""Program exit"""
 		Gtk.main_quit()
-
 
 if __name__ == "__main__":
 	signal.signal(signal.SIGINT, signal.SIG_DFL)  # make ^C work
