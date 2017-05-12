@@ -17,11 +17,22 @@ fftw
 libpulse
 ```
 
+Ubuntu/Linux Mint
+
+```
+apt-get install libpulse-dev
+apt-get install python3-dev
+apt-get install libfftw3-dev
+```
+
 Build
 --------------
 
     git clone https://github.com/HaCk3Dq/spectrumyzer.git
     make
+
+Note:
+Locate `Python.h` and change path to `python3.6m` in Makefile if you need
 
 If this completes successfully, test with:
 
