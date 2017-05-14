@@ -20,9 +20,7 @@ libpulse
 Ubuntu/Linux Mint
 
 ```
-apt-get install libpulse-dev
-apt-get install python3-dev
-apt-get install libfftw3-dev
+apt-get install libpulse-dev python3-dev libfftw3-dev
 ```
 
 Build
