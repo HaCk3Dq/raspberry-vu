@@ -43,7 +43,6 @@ class ConfigManager(dict):
 		try:
 			# TODO: add logger module for colored output
 			self.parser.read(self.defconfig)
-			self.parser.read(configfile)
 			self.read_spec_data()
 		except Exception as e:
 			print("Fail to read user config:")
