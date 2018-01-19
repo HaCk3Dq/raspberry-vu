@@ -326,6 +326,8 @@ class MainApp:
 		dx = self.config["left_offset"]
 		for i, height in enumerate(self.previous_sample_height):
 			width = self.bars.width + int(i < self.bars.mark)
+			if height < 0:
+				height = 0
 			cr.rectangle(dx, self.bars.win_height, width, - height)
 			dx += width + self.bars.padding
 		cr.fill()
