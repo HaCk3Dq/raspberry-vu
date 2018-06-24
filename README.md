@@ -21,6 +21,7 @@ Build
 --------------
 
     git clone https://github.com/HaCk3Dq/spectrumyzer.git
+    cd spectrumyzer
     make
 
 If this completes successfully, test with:
