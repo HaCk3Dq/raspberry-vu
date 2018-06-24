@@ -28,6 +28,7 @@ Build
 --------------
 
     git clone https://github.com/HaCk3Dq/spectrumyzer.git
+    cd spectrumyzer
     make
 
 Note:
