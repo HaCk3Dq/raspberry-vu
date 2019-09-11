@@ -1,7 +1,7 @@
 Spectrumyzer
 ==============
 
-[![prev](https://i.ytimg.com/vi/nsqza-5bOK8/maxresdefault.jpg)](http://www.youtube.com/watch?v=nsqza-5bOK8)
+[![prev](https://raw.githubusercontent.com/HaCk3Dq/spectrumyzer/74ec56fca5d8c8c41b478c420849ff02d47e87fd/scrotDesk2.png)](http://www.youtube.com/watch?v=nsqza-5bOK8)
 (click on the preview to watch demo)
 
 Dependencies
